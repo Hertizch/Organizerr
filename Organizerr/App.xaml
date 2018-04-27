@@ -1,9 +1,26 @@
 ﻿<Application x:Class="Organizerr.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Organizerr"
+             xmlns:vm="clr-namespace:Organizerr.ViewModels"
+             xmlns:view="clr-namespace:Organizerr.Views"
+             xmlns:conv="clr-namespace:Organizerr.Converters"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <vm:BaseViewModel x:Key="BaseViewModel" />
+            
+            <DataTemplate DataType="{x:Type vm:RadarrViewModel}">
+                <view:RadarrView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type vm:SonarrViewModel}">
+                <view:SonarrView />
+            </DataTemplate>
+
+            <conv:BytesToSizeWithSuffixConverter x:Key="BytesToSizeWithSuffixConverter" />
+            <conv:IsCutoffMetToBooleanConverter x:Key="IsCutoffMetToBooleanConverter" />
+            <conv:InvertedBooleanConverter x:Key="InvertedBooleanConverter" />
+
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
