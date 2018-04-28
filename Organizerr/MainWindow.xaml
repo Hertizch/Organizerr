@@ -7,18 +7,30 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:BaseViewModel, IsDesignTimeCreatable=True}"
         DataContext="{StaticResource BaseViewModel}"
-        Title="MainWindow" Height="950" Width="1600">
+        Style="{StaticResource MainWindow}" WindowStartupLocation="CenterScreen">
+
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Close" Executed="CloseCommandHandler" CanExecute="CanExecuteHandler" />
+    </Window.CommandBindings>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="40" />
             <RowDefinition />
         </Grid.RowDefinitions>
 
+        <DockPanel>
+            <TextBlock Text="ORGANIZERR" VerticalAlignment="Center" Margin="30,0" Foreground="#66FFFFFF" />
+            <Button Style="{StaticResource TitlebarButton}" Content="{StaticResource WindowCloseIcon}" Command="ApplicationCommands.Close" HorizontalAlignment="Right" VerticalAlignment="Top" Width="40" Height="40" />
+        </DockPanel>
+
+        <!--
         <StackPanel Orientation="Horizontal">
             <Button Content="Radarr" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Padding="4" />
             <Button Content="Sonarr" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[1]}" Padding="4" />
         </StackPanel>
+        -->
 
-        <ContentControl Grid.Row="1" Content="{Binding Path=SelectedPageViewModel}" />
+        <ContentControl Grid.Row="1" Content="{Binding Path=SelectedPageViewModel, Mode=OneWay}" />
     </Grid>
 </Window>

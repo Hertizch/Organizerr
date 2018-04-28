@@ -6,6 +6,7 @@
              xmlns:vm="clr-namespace:Organizerr.ViewModels"
              xmlns:radarrEnum="clr-namespace:RadarrSharp.Enums;assembly=RadarrSharp"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:helpers="clr-namespace:Organizerr.Helpers"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              d:DataContext="{d:DesignInstance vm:RadarrViewModel, IsDesignTimeCreatable=True}"
              mc:Ignorable="d" 
@@ -19,53 +20,63 @@
         </ObjectDataProvider>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid Margin="30,30,30,0">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <Grid>
+        <Grid Margin="0,0,0,30">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBox Text="{Binding Path=SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" Padding="4" />
+
+            <TextBox Style="{StaticResource DefaultTextBox}" Text="{Binding Path=SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" />
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Search for missing" Padding="8,4" />
-                <Button Content="Unmonitor downloaded" Padding="8,4" />
-                <Button Content="Unmonitor where cutoff has been met" Padding="8,4" />
+                <Button Content="Search for missing movies" ToolTip="Search for all missing movies if they are released - USE WITH CARE" Command="{Binding Path=SearchForMissingMoviesCommand}" Style="{StaticResource TextButton}" Margin="15,0,0,0" />
+                <Button Content="Unmonitor downloaded movies" ToolTip="Unmonitor all downloaded movies regardless wether the cutoff quality has been met or not - USE WITH CARE" Style="{StaticResource TextButton}" Margin="15,0,0,0" />
+                <Button Content="Unmonitor movies where cutoff has been met" ToolTip="Unmonitors all movies where the cutoff quality has been met - USE WITH CARE" Command="{Binding Path=UnmonitorWhereCutoffMetCommand}" Style="{StaticResource TextButton}" Margin="15,0,0,0" />
             </StackPanel>
             
         </Grid>
 
-        <DataGrid x:Name="MoviesGrid" Grid.Row="1" ItemsSource="{Binding Path=MoviesView}" AutoGenerateColumns="False" CanUserAddRows="False">
+        <!-- Movies Grid -->
+        <DataGrid x:Name="MoviesGrid" Grid.Row="1" ItemsSource="{Binding Path=MoviesView}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}" RowStyle="{StaticResource MainDataGridRow}">
             <DataGrid.Columns>
 
-                <DataGridTemplateColumn Header="Downloaded" SortMemberPath="Downloaded" Width="80">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <TextBlock>
-                                <TextBlock.Style>
-                                    <Style TargetType="{x:Type TextBlock}">
-                                        <Setter Property="Background" Value="Red" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Path=Downloaded}" Value="True">
-                                                <Setter Property="Background" Value="Green" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <!-- ID -->
+                <DataGridTextColumn Binding="{Binding Path=Id}" Header="ID" MinWidth="40" IsReadOnly="True" />
 
-                <DataGridTemplateColumn Header="Monitored" SortMemberPath="Monitored">
+                <!-- Downloaded -->
+                <DataGridCheckBoxColumn Binding="{Binding Path=Downloaded}" SortMemberPath="Downloaded" IsReadOnly="True" ElementStyle="{StaticResource NoTextCheckBox}">
+                    <DataGridCheckBoxColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="Transparent" Width="25" ToolTip="Downloaded">
+                                <Border Background="Transparent" Width="10" Height="10">
+                                    <Path x:Name="Icon" Data="{StaticResource DownloadIcon}" Fill="#66FFFFFF" Stretch="Uniform" />
+                                </Border>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridCheckBoxColumn.HeaderTemplate>
+                </DataGridCheckBoxColumn>
+
+                <!-- Monitored -->
+                <DataGridTemplateColumn SortMemberPath="Monitored">
+                    <DataGridTemplateColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="Transparent" Width="25" ToolTip="Monitored">
+                                <Border Background="Transparent" Width="10" Height="10">
+                                    <Path x:Name="Icon" Data="{StaticResource MonitoredTrueIcon}" Fill="#66FFFFFF" Stretch="Uniform" />
+                                </Border>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ToggleButton IsChecked="{Binding Path=Monitored}" Content="{Binding Path=Monitored}" IsEnabled="{Binding ElementName=RadarrViewControl, Path=DataContext.ToggleMonitoredStatusIsBusy, Converter={StaticResource InvertedBooleanConverter}}" ToolTip="Toggle Monitored status">
+                            <ToggleButton IsChecked="{Binding Path=Monitored}" Style="{StaticResource CheckBoxToggleButton}" Content="{Binding Path=Monitored}" IsEnabled="{Binding ElementName=RadarrViewControl, Path=DataContext.ToggleMonitoredStatusIsBusy, Converter={StaticResource InvertedBooleanConverter}}" ToolTip="Toggle Monitored status">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="Click">
                                         <i:InvokeCommandAction Command="{Binding ElementName=RadarrViewControl, Path=DataContext.ToggleMonitoredStatusCommand}" CommandParameter="{Binding}" />
@@ -77,26 +88,22 @@
                 </DataGridTemplateColumn>
 
 
-                <DataGridTextColumn Binding="{Binding Path=Year}" Header="Year" IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding Path=Title}" Header="Title" IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding Path=Status}" Header="Status" IsReadOnly="True" />
-                <!--
-                <DataGridTemplateColumn Header="Movie">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Path=Title}" />
-                                <TextBlock Text="{Binding Path=Year}" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                -->
-                <DataGridTextColumn Binding="{Binding Path=MovieFile.Quality.Quality.Name}" Header="Quality" IsReadOnly="True" />
+                <DataGridTextColumn Binding="{Binding Path=Year}" Header="Year" MinWidth="50" IsReadOnly="True" />
+                
+                <!-- Title -->
+                <DataGridTextColumn Binding="{Binding Path=Title}" Header="Title" IsReadOnly="True" Width="*" />
+                
+                <!-- Status -->
+                <DataGridTextColumn Binding="{Binding Path=Status}" Header="Status" MinWidth="100" IsReadOnly="True" />
 
-                <DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}, Mode=OneWay}" SelectedItemBinding="{Binding Path=MinimumAvailability}" Header="Minimum Availability" />
+                <!-- Quality -->
+                <DataGridTextColumn Binding="{Binding Path=MovieFile.Quality.Quality.Name}" Header="Quality" MinWidth="100" IsReadOnly="True" />
 
-                <DataGridCheckBoxColumn Header="Cutoff Met" IsReadOnly="True">
+                <!-- Min availability -->
+                <DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}, Mode=OneWay}" SelectedItemBinding="{Binding Path=MinimumAvailability}" MinWidth="100" Header="Min. Availability" />
+
+                <!-- Cutoff -->
+                <DataGridCheckBoxColumn Header="Cutoff Met" MinWidth="80" IsReadOnly="True" ElementStyle="{StaticResource NoTextCheckBox}">
                     <DataGridCheckBoxColumn.Binding>
                         <MultiBinding Converter="{StaticResource IsCutoffMetToBooleanConverter}">
                             <Binding Path="QualityProfileId" />
@@ -106,26 +113,98 @@
                     </DataGridCheckBoxColumn.Binding>
                 </DataGridCheckBoxColumn>
 
-                <DataGridTextColumn Binding="{Binding Path=MovieFile.Size, Converter={StaticResource BytesToSizeWithSuffixConverter}}" Header="Movie Size" IsReadOnly="True" />
-                <DataGridTextColumn Binding="{Binding Path=MovieFile.RelativePath}" Header="Filename" IsReadOnly="True" />
-                
-                <DataGridTemplateColumn Header="Movie">
+                <!-- Size -->
+                <DataGridTextColumn Binding="{Binding Path=MovieFile.Size, Converter={StaticResource BytesToSizeWithSuffixConverter}}" Header="Movie Size" MinWidth="80" IsReadOnly="True" />
+
+                <!-- Delete -->
+                <DataGridTemplateColumn Width="35" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Delete" HorizontalAlignment="Left" Padding="8,0" />
+                            <Button Content="{StaticResource DeleteIcon}" Style="{StaticResource IconButton}" ToolTip="Delete movie" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn Header="Movie">
+                <!-- Auto search -->
+                <DataGridTemplateColumn Width="35" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Search" HorizontalAlignment="Left" Padding="8,0" />
+                            <Button Command="{Binding ElementName=RadarrViewControl, Path=DataContext.AutomaticMovieSearchCommand}" CommandParameter="{Binding}" Content="{StaticResource SearchIcon}" Style="{StaticResource IconButton}" ToolTip="Search for movie" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Radarr link -->
+                <DataGridTemplateColumn Width="35" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Command="{Binding ElementName=RadarrViewControl, Path=DataContext.OpenRadarrPageCommand}" CommandParameter="{Binding}" Content="{StaticResource LinkIcon}" Style="{StaticResource IconButton}" ToolTip="Open Radarr page" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
             </DataGrid.Columns>
+
+            <!-- Details -->
+            <!--
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+
+                        <Image Width="170" Margin="43,25,25,25" VerticalAlignment="Top" RenderOptions.BitmapScalingMode="Fant">
+                            <helpers:ImageAsyncHelper.SourceUri>
+                                <MultiBinding Converter="{StaticResource ImageSourceConverter}">
+                                    <Binding Path="Images" IsAsync="True" Mode="OneWay" />
+                                    <Binding Path="DataContext.RadarrUrl" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                </MultiBinding>
+                            </helpers:ImageAsyncHelper.SourceUri>
+                        </Image>
+
+                        <StackPanel Grid.Column="1" Margin="0,25,25,25">
+                            <TextBlock Text="File info:" FontFamily="Segoe UI Semibold" FontSize="14" />
+                            <TextBlock Text="{Binding Path=MovieFile.RelativePath, StringFormat={}Filename: {0}}" />
+                            <TextBlock Text="{Binding Path=Path, StringFormat={}Path: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.Subtitles, StringFormat={}Subtitles: {0}}" />
+
+                            <TextBlock Text="Video info:" FontFamily="Segoe UI Semibold" FontSize="14" Margin="0,8,0,0" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoCodec, StringFormat={}Codec: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoBitrate, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}Bitrate: {0}ps}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoBitDepth, StringFormat={}Bit Depth: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.Width, StringFormat={}Width: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.Height, StringFormat={}Height: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoFps, StringFormat={}FPS: {0}}" />
+                            <TextBlock>
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="Runtime: {}{0}h {1}m">
+                                        <Binding Path="MovieFile.MediaInfo.RunTime.Hours"/>
+                                        <Binding Path="MovieFile.MediaInfo.RunTime.Minutes"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+
+                            <TextBlock Text="Audio info:" FontFamily="Segoe UI Semibold" FontSize="14" Margin="0,8,0,0" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioFormat, StringFormat={}Format: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioChannels, StringFormat={}Channels: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioChannelPositions, StringFormat={}Channel Positions: {0}}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioBitrate, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}Bitrate: {0}ps}" />
+                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioLanguages, StringFormat={}Languages: {0}}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+            -->
         </DataGrid>
+
+        <!--
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Path=Movies.Count, StringFormat='{}{0} movies total'}" />
+            </StatusBarItem>
+        </StatusBar>
+        -->
     </Grid>
 </UserControl>

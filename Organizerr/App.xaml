@@ -20,6 +20,16 @@
             <conv:BytesToSizeWithSuffixConverter x:Key="BytesToSizeWithSuffixConverter" />
             <conv:IsCutoffMetToBooleanConverter x:Key="IsCutoffMetToBooleanConverter" />
             <conv:InvertedBooleanConverter x:Key="InvertedBooleanConverter" />
+            <conv:ImageSourceConverter x:Key="ImageSourceConverter" />
+
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Icons.xaml" />
+                <ResourceDictionary Source="Resources/Styles/DataGrid.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Window.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ScrollBar.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Button.xaml" />
+                <ResourceDictionary Source="Resources/Styles/TextContainer.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>
     </Application.Resources>
