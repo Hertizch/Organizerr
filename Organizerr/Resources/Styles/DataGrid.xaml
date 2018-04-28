@@ -144,10 +144,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#19007ACC" />
+                            <Setter Property="Background" Value="#FF211920" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="#FF005893" />
+                            <Setter Property="Background" Value="#FF4D394B" />
                             <Setter Property="Foreground" Value="White" />
                         </Trigger>
                     </ControlTemplate.Triggers>

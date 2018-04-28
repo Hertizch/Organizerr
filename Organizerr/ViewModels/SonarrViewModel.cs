@@ -13,6 +13,6 @@ namespace Organizerr.ViewModels
 
         }
 
-        public string Name => "SonarrViewModel";
+        public string Name => "SONARR";
     }
 }

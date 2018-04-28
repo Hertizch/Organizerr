@@ -29,6 +29,7 @@ namespace Organizerr.ViewModels
         private RelayCommand _openRadarrPageCommand;
         private RelayCommand _automaticMovieSearchCommand;
         private RelayCommand _searchForMissingMoviesCommand;
+        private RelayCommand _refreshMovieCommand;
 
         public RadarrViewModel()
         {
@@ -56,7 +57,7 @@ namespace Organizerr.ViewModels
             MoviesView.Filter = new Predicate<object>(Movies_OnFilter);
         }
 
-        public string Name => "RadarrViewModel";
+        public string Name => "RADARR";
 
         public string SearchTerm
         {
@@ -143,6 +144,9 @@ namespace Organizerr.ViewModels
 
         public RelayCommand SearchForMissingMoviesCommand =>
             _searchForMissingMoviesCommand ?? (_searchForMissingMoviesCommand = new RelayCommand(Execute_SearchForMissingMoviesCommand, p => true));
+
+        public RelayCommand RefreshMovieCommand =>
+            _refreshMovieCommand ?? (_refreshMovieCommand = new RelayCommand(Execute_RefreshMovieCommand, p => true));
 
         private async void Execute_GetMoviesCommand(object obj)
         {
@@ -305,6 +309,21 @@ namespace Organizerr.ViewModels
                 Debug.WriteLine($"[INFO] Command '{command.Name}' (ID: {command.Id}) started successfully");
             else
                 Debug.WriteLine($"[INFO] Got no response from Radarr, operation has failed");
+        }
+
+        private async void Execute_RefreshMovieCommand(object obj)
+        {
+            if (obj == null)
+                return;
+
+            // Get movie object
+            var movie = (RadarrSharp.Models.Movie)obj;
+
+            var command = await RadarrClient.Command.RefreshMovie(int.Parse(movie.Id.ToString()));
+            if (command != null)
+                Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Command '{command.Name}' (ID: {command.Id}) started successfully");
+            else
+                Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got no response from Radarr, operation has failed");
         }
 
         private bool Movies_OnFilter(object obj)

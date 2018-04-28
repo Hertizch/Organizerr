@@ -5,12 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:vm="clr-namespace:Organizerr.ViewModels"
              xmlns:radarrEnum="clr-namespace:RadarrSharp.Enums;assembly=RadarrSharp"
+             xmlns:radarrModels="clr-namespace:RadarrSharp.Models;assembly=RadarrSharp"
              xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:helpers="clr-namespace:Organizerr.Helpers"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              d:DataContext="{d:DesignInstance vm:RadarrViewModel, IsDesignTimeCreatable=True}"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="1674.664">
+             d:DesignHeight="800" d:DesignWidth="1674.664">
 
     <UserControl.Resources>
         <ObjectDataProvider x:Key="MinimumAvailabilityEnumData" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
@@ -51,6 +52,7 @@
                 <DataGridTextColumn Binding="{Binding Path=Id}" Header="ID" MinWidth="40" IsReadOnly="True" />
 
                 <!-- Downloaded -->
+                <!--
                 <DataGridCheckBoxColumn Binding="{Binding Path=Downloaded}" SortMemberPath="Downloaded" IsReadOnly="True" ElementStyle="{StaticResource NoTextCheckBox}">
                     <DataGridCheckBoxColumn.HeaderTemplate>
                         <DataTemplate>
@@ -62,6 +64,7 @@
                         </DataTemplate>
                     </DataGridCheckBoxColumn.HeaderTemplate>
                 </DataGridCheckBoxColumn>
+                -->
 
                 <!-- Monitored -->
                 <DataGridTemplateColumn SortMemberPath="Monitored">
@@ -87,7 +90,7 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-
+                <!-- Year -->
                 <DataGridTextColumn Binding="{Binding Path=Year}" Header="Year" MinWidth="50" IsReadOnly="True" />
                 
                 <!-- Title -->
@@ -96,6 +99,41 @@
                 <!-- Status -->
                 <DataGridTextColumn Binding="{Binding Path=Status}" Header="Status" MinWidth="100" IsReadOnly="True" />
 
+                <!-- Dl Status -->
+                <DataGridTemplateColumn Header="Status" SortMemberPath="Downloaded" MinWidth="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Border CornerRadius="2" Background="#FF4F4F4F">
+                                <TextBlock Margin="5,1" HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=Downloaded}" Value="True">
+                                                    <Setter Property="Text" Value="downloaded" />
+                                                    <Setter Property="Background" Value="#FF5E8B21" />
+                                                    <Setter Property="ToolTip" Value="{Binding Path=MovieFile.Quality.Quality.Name}" />
+                                                </DataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding Path=Downloaded}" Value="True" />
+                                                        <Condition Binding="{Binding Path=Monitored}" Value="False" />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Background" Value="#FF4F4F4F" />
+                                                    <Setter Property="ToolTip" Value="{Binding Path=MovieFile.Quality.Quality.Name, StringFormat='{}{0} - Not monitored'}" />
+                                                </MultiDataTrigger>
+                                                <DataTrigger Binding="{Binding Path=Downloaded}" Value="False">
+                                                    <Setter Property="Text" Value="missing" />
+                                                    <Setter Property="Background" Value="#FF932E2E" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <!-- Quality -->
                 <DataGridTextColumn Binding="{Binding Path=MovieFile.Quality.Quality.Name}" Header="Quality" MinWidth="100" IsReadOnly="True" />
 
@@ -103,7 +141,16 @@
                 <DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}, Mode=OneWay}" SelectedItemBinding="{Binding Path=MinimumAvailability}" MinWidth="100" Header="Min. Availability" />
 
                 <!-- Cutoff -->
-                <DataGridCheckBoxColumn Header="Cutoff Met" MinWidth="80" IsReadOnly="True" ElementStyle="{StaticResource NoTextCheckBox}">
+                <DataGridCheckBoxColumn Width="35" IsReadOnly="True" ElementStyle="{StaticResource NoTextCheckBox}">
+                    <DataGridCheckBoxColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <Border Background="Transparent" Width="25" ToolTip="Cutoff Met">
+                                <Border Background="Transparent" Width="12" Height="12">
+                                    <Path x:Name="Icon" Data="{StaticResource CutoffIcon}" Fill="#66FFFFFF" Stretch="Uniform" />
+                                </Border>
+                            </Border>
+                        </DataTemplate>
+                    </DataGridCheckBoxColumn.HeaderTemplate>
                     <DataGridCheckBoxColumn.Binding>
                         <MultiBinding Converter="{StaticResource IsCutoffMetToBooleanConverter}">
                             <Binding Path="QualityProfileId" />
@@ -111,25 +158,32 @@
                             <Binding ElementName="RadarrViewControl" Path="DataContext.Profiles" />
                         </MultiBinding>
                     </DataGridCheckBoxColumn.Binding>
+                    <DataGridCheckBoxColumn.SortMemberPath>
+                        <MultiBinding Converter="{StaticResource IsCutoffMetToBooleanConverter}">
+                            <Binding Path="QualityProfileId" />
+                            <Binding Path="MovieFile.Quality.Quality.Id" />
+                            <Binding ElementName="RadarrViewControl" Path="DataContext.Profiles" />
+                        </MultiBinding>
+                    </DataGridCheckBoxColumn.SortMemberPath>
                 </DataGridCheckBoxColumn>
 
                 <!-- Size -->
                 <DataGridTextColumn Binding="{Binding Path=MovieFile.Size, Converter={StaticResource BytesToSizeWithSuffixConverter}}" Header="Movie Size" MinWidth="80" IsReadOnly="True" />
-
-                <!-- Delete -->
-                <DataGridTemplateColumn Width="35" CanUserResize="False">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="{StaticResource DeleteIcon}" Style="{StaticResource IconButton}" ToolTip="Delete movie" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
 
                 <!-- Auto search -->
                 <DataGridTemplateColumn Width="35" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Command="{Binding ElementName=RadarrViewControl, Path=DataContext.AutomaticMovieSearchCommand}" CommandParameter="{Binding}" Content="{StaticResource SearchIcon}" Style="{StaticResource IconButton}" ToolTip="Search for movie" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Refresh -->
+                <DataGridTemplateColumn Width="35" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Command="{Binding ElementName=RadarrViewControl, Path=DataContext.RefreshMovieCommand}" CommandParameter="{Binding}" Content="{StaticResource RefreshIcon}" Style="{StaticResource IconButton}" ToolTip="Search for movie" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -143,18 +197,54 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
+                <!-- Delete -->
+                <DataGridTemplateColumn Width="35" CanUserResize="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="{StaticResource DeleteIcon}" Style="{StaticResource IconButton}" ToolTip="Delete movie" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
             </DataGrid.Columns>
 
             <!-- Details -->
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
                     <Grid>
+                        <Grid.Style>
+                            <Style TargetType="{x:Type Grid}">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <ImageBrush x:Name="BgImage" ImageSource="http://192.168.1.250:7878/radarr/MediaCover/5/fanart.jpg" Stretch="UniformToFill" AlignmentY="Top" RenderOptions.BitmapScalingMode="Fant" />
+                                    </Setter.Value>
+                                </Setter>
+                                <!--
+                                <Style.Triggers>
+                                    <EventTrigger RoutedEvent="Binding.TargetUpdated">
+                                        <EventTrigger.Actions>
+                                            <BeginStoryboard>
+                                                <Storyboard>
+                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.01" To="0.3" Duration="0:0:0.4">
+                                                        <DoubleAnimation.EasingFunction>
+                                                            <CubicEase EasingMode="EaseInOut" />
+                                                        </DoubleAnimation.EasingFunction>
+                                                    </DoubleAnimation>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger.Actions>
+                                    </EventTrigger>
+                                </Style.Triggers>
+                                -->
+                            </Style>
+                        </Grid.Style>
+
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
 
-                        <Image Width="170" Margin="43,25,25,25" VerticalAlignment="Top" RenderOptions.BitmapScalingMode="Fant">
+                        <Image Width="170" Margin="43,15,25,15" VerticalAlignment="Top" RenderOptions.BitmapScalingMode="Fant">
                             <helpers:ImageAsyncHelper.SourceUri>
                                 <MultiBinding Converter="{StaticResource ImageSourceConverter}">
                                     <Binding Path="Images" IsAsync="True" Mode="OneWay" />
@@ -163,7 +253,7 @@
                             </helpers:ImageAsyncHelper.SourceUri>
                         </Image>
 
-                        <StackPanel Grid.Column="1" Margin="0,25,25,25">
+                        <StackPanel Grid.Column="1" Margin="0,15,15,15">
                             <TextBlock Text="File info:" FontFamily="Segoe UI Semibold" FontSize="14" />
                             <TextBlock Text="{Binding Path=MovieFile.RelativePath, StringFormat={}Filename: {0}}" />
                             <TextBlock Text="{Binding Path=Path, StringFormat={}Path: {0}}" />
@@ -197,12 +287,25 @@
             </DataGrid.RowDetailsTemplate>
         </DataGrid>
 
-        <!--
-        <StatusBar Grid.Row="2">
-            <StatusBarItem>
-                <TextBlock Text="{Binding Path=Movies.Count, StringFormat='{}{0} movies total'}" />
+        <!-- Status bar -->
+        <StatusBar Grid.Row="2" Margin="-30,0,-30,0" Background="Black" BorderBrush="#FF3E3E42" BorderThickness="0,1,0,0">
+            
+            <StatusBarItem BorderBrush="#FF3E3E42" BorderThickness="0,0,1,0">
+                <TextBlock Text="{Binding Path=Movies.Count, StringFormat='{}Movies Total: {0}'}" Foreground="#66FFFFFF" Margin="15,3" />
             </StatusBarItem>
+            
+            <StatusBarItem BorderBrush="#FF3E3E42" BorderThickness="0,0,1,0">
+                <TextBlock Text="{Binding Path=Movies.Count, StringFormat='{}Movies Missing: {0}'}" Foreground="#66FFFFFF" Margin="15,3" />
+            </StatusBarItem>
+            
+            <StatusBarItem BorderBrush="#FF3E3E42" BorderThickness="0,0,1,0">
+                <TextBlock Text="Disk usage: 8.46 TB" Foreground="#66FFFFFF" Margin="15,3" />
+            </StatusBarItem>
+
+            <StatusBarItem BorderBrush="#FF3E3E42" BorderThickness="1,0,0,0" HorizontalAlignment="Right">
+                <TextBlock Text="Radarr version: 0.2.0.1067" Foreground="#FFAE6AA7" Margin="15,3" />
+            </StatusBarItem>
+
         </StatusBar>
-        -->
     </Grid>
 </UserControl>

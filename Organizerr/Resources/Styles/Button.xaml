@@ -123,7 +123,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Foreground" Value="White" />
-        <Setter Property="Background" Value="#FF005893" />
+        <Setter Property="Background" Value="#FF4D394B" />
         <Setter Property="Padding" Value="16,0" />
         <Setter Property="Height" Value="36" />
         <Setter Property="MinWidth" Value="88" />
@@ -137,7 +137,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FF007ACC" />
+                            <Setter Property="Background" Value="#FF4D394B" />
                             <Setter Property="Effect">
                                 <Setter.Value>
                                     <DropShadowEffect BlurRadius="5" ShadowDepth="5" Opacity="0.2" RenderingBias="Quality" />
@@ -145,7 +145,7 @@
                             </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#FF007ACC" />
+                            <Setter Property="Background" Value="#FF4D394B" />
                             <Setter Property="Foreground" Value="#1EFFFFFF" />
                             <Setter Property="Effect">
                                 <Setter.Value>

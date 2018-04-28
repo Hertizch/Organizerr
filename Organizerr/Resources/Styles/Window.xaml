@@ -4,7 +4,7 @@
     <Style x:Key="MainWindow" TargetType="{x:Type Window}">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
-        <Setter Property="Background" Value="#FF212121" />
+        <Setter Property="Background" Value="#FF0F0F0F" />
         <Setter Property="ResizeMode" Value="CanResize" />
         <Setter Property="WindowStyle" Value="None" />
         <Setter Property="Title" Value="Organizerr" />
