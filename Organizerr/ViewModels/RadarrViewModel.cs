@@ -293,9 +293,7 @@ namespace Organizerr.ViewModels
 
             var command = await RadarrClient.Command.MoviesSearch(new int[] { int.Parse(movie.Id.ToString()) });
             if (command != null)
-            {
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Command '{command.Name}' (ID: {command.Id}) started successfully");
-            }
             else
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got no response from Radarr, operation has failed");
         }
@@ -304,9 +302,7 @@ namespace Organizerr.ViewModels
         {
             var command = await RadarrClient.Command.MissingMoviesSearch("status", "released");
             if (command != null)
-            {
                 Debug.WriteLine($"[INFO] Command '{command.Name}' (ID: {command.Id}) started successfully");
-            }
             else
                 Debug.WriteLine($"[INFO] Got no response from Radarr, operation has failed");
         }

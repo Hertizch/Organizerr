@@ -19,18 +19,25 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <DockPanel>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="40" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid Background="#FF1A1A1A">
+            <Button Content="{StaticResource MenuIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Style="{StaticResource SidebarButton}" />
+        </Grid>
+
+        <DockPanel Grid.Column="1" Background="#991A1A1A">
             <TextBlock Text="ORGANIZERR" VerticalAlignment="Center" Margin="30,0" Foreground="#66FFFFFF" />
             <Button Style="{StaticResource TitlebarButton}" Content="{StaticResource WindowCloseIcon}" Command="ApplicationCommands.Close" HorizontalAlignment="Right" VerticalAlignment="Top" Width="40" Height="40" />
         </DockPanel>
 
-        <!--
-        <StackPanel Orientation="Horizontal">
-            <Button Content="Radarr" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Padding="4" />
-            <Button Content="Sonarr" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[1]}" Padding="4" />
+        <StackPanel Grid.Row="1" Background="#FF1A1A1A">
+            <Button Content="{StaticResource MovieIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Style="{StaticResource SidebarButton}" />
+            <Button Content="{StaticResource SeriesIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[1]}" Style="{StaticResource SidebarButton}" />
         </StackPanel>
-        -->
 
-        <ContentControl Grid.Row="1" Content="{Binding Path=SelectedPageViewModel, Mode=OneWay}" />
+        <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding Path=SelectedPageViewModel, Mode=OneWay}" />
     </Grid>
 </Window>

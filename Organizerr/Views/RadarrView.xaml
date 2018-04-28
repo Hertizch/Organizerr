@@ -55,7 +55,7 @@
                     <DataGridCheckBoxColumn.HeaderTemplate>
                         <DataTemplate>
                             <Border Background="Transparent" Width="25" ToolTip="Downloaded">
-                                <Border Background="Transparent" Width="10" Height="10">
+                                <Border Background="Transparent" Width="12" Height="12">
                                     <Path x:Name="Icon" Data="{StaticResource DownloadIcon}" Fill="#66FFFFFF" Stretch="Uniform" />
                                 </Border>
                             </Border>
@@ -68,7 +68,7 @@
                     <DataGridTemplateColumn.HeaderTemplate>
                         <DataTemplate>
                             <Border Background="Transparent" Width="25" ToolTip="Monitored">
-                                <Border Background="Transparent" Width="10" Height="10">
+                                <Border Background="Transparent" Width="12" Height="12">
                                     <Path x:Name="Icon" Data="{StaticResource MonitoredTrueIcon}" Fill="#66FFFFFF" Stretch="Uniform" />
                                 </Border>
                             </Border>
@@ -146,7 +146,6 @@
             </DataGrid.Columns>
 
             <!-- Details -->
-            <!--
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
                     <Grid>
@@ -196,7 +195,6 @@
                     </Grid>
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
-            -->
         </DataGrid>
 
         <!--
