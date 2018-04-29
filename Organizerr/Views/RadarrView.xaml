@@ -37,9 +37,28 @@
             <TextBox Style="{StaticResource DefaultTextBox}" Text="{Binding Path=SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" />
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Search for missing movies" ToolTip="Search for all missing movies if they are released - USE WITH CARE" Command="{Binding Path=SearchForMissingMoviesCommand}" Style="{StaticResource TextButton}" Margin="15,0,0,0" />
-                <Button Content="Unmonitor downloaded movies" ToolTip="Unmonitor all downloaded movies regardless wether the cutoff quality has been met or not - USE WITH CARE" Style="{StaticResource TextButton}" Margin="15,0,0,0" />
-                <Button Content="Unmonitor movies where cutoff has been met" ToolTip="Unmonitors all movies where the cutoff quality has been met - USE WITH CARE" Command="{Binding Path=UnmonitorWhereCutoffMetCommand}" Style="{StaticResource TextButton}" Margin="15,0,0,0" />
+                
+                <ComboBox Style="{StaticResource MultiButtonComboBox}" ItemContainerStyle="{StaticResource MultiButtonComboBoxItem}" Text="Search" Margin="15,0,0,0">
+                    <ComboBox.Items>
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="For missing movies" Command="{Binding Path=SearchForMissingMoviesCommand}" />
+                    </ComboBox.Items>
+                </ComboBox>
+                
+                <ComboBox Style="{StaticResource MultiButtonComboBox}" ItemContainerStyle="{StaticResource MultiButtonComboBoxItem}" Text="Unmonitor" Margin="15,0,0,0">
+                    <ComboBox.Items>
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All downloaded movies" />
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All movies where cutoff quality is met" Command="{Binding Path=UnmonitorWhereCutoffMetCommand}" />
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All unreleased movies" />
+                    </ComboBox.Items>
+                </ComboBox>
+
+                <ComboBox Style="{StaticResource MultiButtonComboBox}" ItemContainerStyle="{StaticResource MultiButtonComboBoxItem}" Text="Add" Margin="15,0,0,0">
+                    <ComboBox.Items>
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="New movie" />
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="Movies from discovery" />
+                    </ComboBox.Items>
+                </ComboBox>
+
             </StackPanel>
             
         </Grid>
@@ -103,27 +122,37 @@
                 <DataGridTemplateColumn Header="Status" SortMemberPath="Downloaded" MinWidth="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Border CornerRadius="2" Background="#FF4F4F4F">
+                            <Border CornerRadius="3">
+                                <Border.Style>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=Downloaded}" Value="True">
+                                                <Setter Property="Background" Value="#FF5E8B21" />
+                                                <Setter Property="ToolTip" Value="{Binding Path=MovieFile.Quality.Quality.Name}" />
+                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Path=Downloaded}" Value="True" />
+                                                    <Condition Binding="{Binding Path=Monitored}" Value="False" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Background" Value="#FF4F4F4F" />
+                                                <Setter Property="ToolTip" Value="{Binding Path=MovieFile.Quality.Quality.Name, StringFormat='{}{0} - Not monitored'}" />
+                                            </MultiDataTrigger>
+                                            <DataTrigger Binding="{Binding Path=Downloaded}" Value="False">
+                                                <Setter Property="Background" Value="#FF932E2E" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
                                 <TextBlock Margin="5,1" HorizontalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="{x:Type TextBlock}">
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Path=Downloaded}" Value="True">
                                                     <Setter Property="Text" Value="downloaded" />
-                                                    <Setter Property="Background" Value="#FF5E8B21" />
-                                                    <Setter Property="ToolTip" Value="{Binding Path=MovieFile.Quality.Quality.Name}" />
                                                 </DataTrigger>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding Path=Downloaded}" Value="True" />
-                                                        <Condition Binding="{Binding Path=Monitored}" Value="False" />
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Background" Value="#FF4F4F4F" />
-                                                    <Setter Property="ToolTip" Value="{Binding Path=MovieFile.Quality.Quality.Name, StringFormat='{}{0} - Not monitored'}" />
-                                                </MultiDataTrigger>
                                                 <DataTrigger Binding="{Binding Path=Downloaded}" Value="False">
                                                     <Setter Property="Text" Value="missing" />
-                                                    <Setter Property="Background" Value="#FF932E2E" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
@@ -212,7 +241,7 @@
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
                     <Border Background="#FF1A1A1A">
-                        <!-- temp disabled due to performance issues
+                        <!-- disabled due to performance issues
                         <Border.Background>
                             <ImageBrush ImageSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMovieFanartUrl, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill" AlignmentY="Top" RenderOptions.BitmapScalingMode="Fant" Opacity="0.3" />
                         </Border.Background>
@@ -334,14 +363,13 @@
                                     <!-- Subtitles -->
                                     <StackPanel Grid.Column="2" Margin="30,0,0,0">
                                         <TextBlock Text="Subtitles:" FontFamily="Segoe UI Semilight" FontSize="14" />
-                                        <TextBlock Grid.Column="2" Text="{Binding Path=MovieFile.MediaInfo.Subtitles}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Path=MovieFile.MediaInfo.Subtitles}" TextWrapping="Wrap" />
                                     </StackPanel>
                                 </Grid>
 
-                                <Border Height="1" Background="#B23E3E42" Margin="0,15" />
-
                                 <!-- Extra files -->
                                 <StackPanel Visibility="{Binding Path=Downloaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Border Height="1" Background="#B23E3E42" Margin="0,15" />
                                     <TextBlock Text="Extra files:" FontFamily="Segoe UI Semilight" FontSize="14" />
                                     <ItemsControl ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.ExtraFiles}">
                                         <ItemsControl.ItemTemplate>

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:Organizerr.ViewModels"
+        xmlns:properties="clr-namespace:Organizerr.Properties"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:BaseViewModel, IsDesignTimeCreatable=True}"
         DataContext="{StaticResource BaseViewModel}"
@@ -30,7 +31,7 @@
         </Grid>
 
         <!-- Top title -->
-        <DockPanel Grid.Column="1" Background="#FF211920">
+        <DockPanel Grid.Column="1" Background="#FF080304">
             <TextBlock Text="ORGANIZERR" VerticalAlignment="Center" Margin="30,0" Foreground="#66FFFFFF" />
             <Rectangle Width="1" Fill="#FF3E3E42" Margin="0,8" />
             <TextBlock Text="{Binding Path=SelectedPageViewModel.Name}" VerticalAlignment="Center" Margin="30,0" Foreground="#66FFFFFF" />
@@ -39,8 +40,8 @@
 
         <!-- Sidebar -->
         <StackPanel Grid.Row="1" Background="#FF4D394B">
-            <Button Content="{StaticResource MovieIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Style="{StaticResource SidebarButton}" Foreground="#B2FFFFFF" />
-            <Button Content="{StaticResource SeriesIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[1]}" Style="{StaticResource SidebarButton}" Foreground="#B2FFFFFF" />
+            <Button Content="{StaticResource MovieIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Style="{StaticResource SidebarButton}" Visibility="{Binding Source={x:Static properties:Settings.Default}, Path=EnableRadarr, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="Radarr" Foreground="#FFFFC230" />
+            <Button Content="{StaticResource SeriesIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[1]}" Style="{StaticResource SidebarButton}" Visibility="{Binding Source={x:Static properties:Settings.Default}, Path=EnableSonarr, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="Sonarr" Foreground="#FF36C6F4" />
         </StackPanel>
 
         <!-- Content page -->

@@ -35,6 +35,7 @@
                 <ResourceDictionary Source="Resources/Styles/ScrollBar.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Button.xaml" />
                 <ResourceDictionary Source="Resources/Styles/TextContainer.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ComboBox.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
         </ResourceDictionary>

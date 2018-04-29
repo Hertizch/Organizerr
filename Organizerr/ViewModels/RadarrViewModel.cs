@@ -503,6 +503,8 @@ namespace Organizerr.ViewModels
 
             Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Open path: {path}");
 
+            BaseViewModel.MessageBoxViewModel.ShowDialog("Open path", "Are you sure you want to open path?");
+
             if (Directory.Exists(path))
                 Process.Start(path);
         }
@@ -514,6 +516,12 @@ namespace Organizerr.ViewModels
 
         private void SetSelectedMoveImageUrls()
         {
+            if (SelectedMovie == null)
+                return;
+
+            if (!SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster))
+                SelectedMoviePosterUrl = $"{RadarrUrl}/Content/Images/poster-dark.png";
+
             SelectedMoviePosterUrl = $"{RadarrUrl}{SelectedMovie.Images?.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster).Url}";
             SelectedMovieFanartUrl = $"{RadarrUrl}{SelectedMovie.Images?.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt).Url}";
         }
@@ -525,7 +533,13 @@ namespace Organizerr.ViewModels
             var movie = (RadarrSharp.Models.Movie)obj;
 
             if (SearchTerm.StartsWith("id:"))
-                return movie != null && movie.Id.ToString() == SearchTerm.Substring(3);
+                return movie != null && movie.Id.ToString() == SearchTerm.Substring("id:".Length);
+
+            if (SearchTerm.StartsWith("imdb:"))
+                return movie != null && movie.ImdbId.ToString() == SearchTerm.Substring("imdb:".Length);
+
+            if (SearchTerm.StartsWith("tmdb:"))
+                return movie != null && movie.TmdbId.ToString() == SearchTerm.Substring("tmdb:".Length);
 
             return movie != null && movie.Title.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase);
         }
