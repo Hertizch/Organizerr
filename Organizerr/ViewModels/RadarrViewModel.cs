@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +22,10 @@ namespace Organizerr.ViewModels
         private int _unmonitorWhereCutoffMetCountProcessed;
         private int _unmonitorWhereCutoffMetCountTotal;
         private ObservableCollection<RadarrSharp.Models.Movie> _movies;
+        private ObservableCollection<RadarrSharp.Models.ExtraFile> _extraFiles;
+        private RadarrSharp.Models.Movie _selectedMovie;
+        private string _selectedMoviePosterUrl;
+        private string _selectedMovieFanartUrl;
         private ICollectionView _moviesView;
         private RelayCommand _getMoviesCommand;
         private RelayCommand _getProfilesCommand;
@@ -30,6 +35,8 @@ namespace Organizerr.ViewModels
         private RelayCommand _automaticMovieSearchCommand;
         private RelayCommand _searchForMissingMoviesCommand;
         private RelayCommand _refreshMovieCommand;
+        private RelayCommand _getExtraFilesCommand;
+        private RelayCommand _openFolderPathCommand;
 
         public RadarrViewModel()
         {
@@ -108,6 +115,42 @@ namespace Organizerr.ViewModels
             }
         }
 
+        public ObservableCollection<RadarrSharp.Models.ExtraFile> ExtraFiles
+        {
+            get => _extraFiles;
+            set
+            {
+                if (value == _extraFiles) return; _extraFiles = value; OnPropertyChanged();
+            }
+        }
+
+        public RadarrSharp.Models.Movie SelectedMovie
+        {
+            get => _selectedMovie;
+            set
+            {
+                if (value == _selectedMovie) return; _selectedMovie = value; OnPropertyChanged(); SetSelectedMoveImageUrls();
+            }
+        }
+
+        public string SelectedMoviePosterUrl
+        {
+            get => _selectedMoviePosterUrl;
+            set
+            {
+                if (value == _selectedMoviePosterUrl) return; _selectedMoviePosterUrl = value; OnPropertyChanged();
+            }
+        }
+
+        public string SelectedMovieFanartUrl
+        {
+            get => _selectedMovieFanartUrl;
+            set
+            {
+                if (value == _selectedMovieFanartUrl) return; _selectedMovieFanartUrl = value; OnPropertyChanged();
+            }
+        }
+
         public List<RadarrSharp.Models.Profile> Profiles { get; set; }
 
         public ICollectionView MoviesView
@@ -148,24 +191,54 @@ namespace Organizerr.ViewModels
         public RelayCommand RefreshMovieCommand =>
             _refreshMovieCommand ?? (_refreshMovieCommand = new RelayCommand(Execute_RefreshMovieCommand, p => true));
 
+        public RelayCommand GetExtraFilesCommand =>
+            _getExtraFilesCommand ?? (_getExtraFilesCommand = new RelayCommand(Execute_GetExtraFilesCommand, p => true));
+
+        public RelayCommand OpenFolderPathCommand =>
+            _openFolderPathCommand ?? (_openFolderPathCommand = new RelayCommand(Execute_OpenFolderPathCommand, p => true));
+
         private async void Execute_GetMoviesCommand(object obj)
         {
+            // Initialize collection if null
             if (Movies == null)
                 Movies = new ObservableCollection<RadarrSharp.Models.Movie>();
 
-            var movies = await RadarrClient.Movie.GetMovies();
-            foreach (var item in movies)
-                Movies.Add(item);
+            IList<RadarrSharp.Models.Movie> movies = new List<RadarrSharp.Models.Movie>();
+
+            try
+            {
+                movies = await RadarrClient.Movie.GetMovies();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] [Execute_GetMoviesCommand] Got no response from Radarr, operation has failed. {ex.Message}");
+            }
+
+            if (movies != null)
+                foreach (var item in movies)
+                    Movies.Add(item);
         }
 
         private async void Execute_GetProfilesCommand(object obj)
         {
+            // Initialize collection if null
             if (Profiles == null)
                 Profiles = new List<RadarrSharp.Models.Profile>();
 
-            var profiles = await RadarrClient.Profile.GetProfiles();
-            foreach (var item in profiles)
-                Profiles.Add(item);
+            IList<RadarrSharp.Models.Profile> profiles = new List<RadarrSharp.Models.Profile>();
+
+            try
+            {
+                profiles = await RadarrClient.Profile.GetProfiles();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] [Execute_GetProfilesCommand] Got no response from Radarr, operation has failed. {ex.Message}");
+            }
+
+            if (profiles != null)
+                foreach (var item in profiles)
+                    Profiles.Add(item);
         }
 
         private async void Execute_ToggleMonitoredStatusCommand(object obj)
@@ -304,7 +377,10 @@ namespace Organizerr.ViewModels
 
         private async void Execute_SearchForMissingMoviesCommand(object obj)
         {
+            // Run command
             var command = await RadarrClient.Command.MissingMoviesSearch("status", "released");
+
+            // Check for success
             if (command != null)
                 Debug.WriteLine($"[INFO] Command '{command.Name}' (ID: {command.Id}) started successfully");
             else
@@ -319,11 +395,72 @@ namespace Organizerr.ViewModels
             // Get movie object
             var movie = (RadarrSharp.Models.Movie)obj;
 
+            // Run command
             var command = await RadarrClient.Command.RefreshMovie(int.Parse(movie.Id.ToString()));
+
+            // Check for success
             if (command != null)
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Command '{command.Name}' (ID: {command.Id}) started successfully");
             else
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got no response from Radarr, operation has failed");
+        }
+
+        private async void Execute_GetExtraFilesCommand(object obj)
+        {
+            if (obj == null)
+                return;
+
+            // Initialize collection if null
+            if (ExtraFiles == null)
+                ExtraFiles = new ObservableCollection<RadarrSharp.Models.ExtraFile>();
+
+            // Clear collection
+            ExtraFiles.Clear();
+
+            // Get movie object
+            var movie = (RadarrSharp.Models.Movie)obj;
+
+            // Skip if not downloaded
+            if (!movie.Downloaded)
+                return;
+
+            // Get extra files object collection
+            var extraFiles = await RadarrClient.ExtraFile.GetExtraFiles(int.Parse(movie.Id.ToString()));
+
+            // Check for success
+            if (extraFiles != null)
+            {
+                // Add to extra files collection
+                foreach (var item in extraFiles)
+                    ExtraFiles.Add(item);
+
+                Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got {extraFiles.Count} extra files");
+            }
+            else
+                Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got no response from Radarr, operation has failed");
+        }
+
+        private void Execute_OpenFolderPathCommand(object obj)
+        {
+            if (obj == null)
+                return;
+
+            // Get movie object
+            var movie = (RadarrSharp.Models.Movie)obj;
+
+            // Set path to run in process
+            var path = $"\\\\{RadarrClient.Host}{movie.Path}";
+
+            Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Open path: {path}");
+
+            if (Directory.Exists(path))
+                Process.Start(path);
+        }
+
+        private void SetSelectedMoveImageUrls()
+        {
+            SelectedMoviePosterUrl = $"{RadarrUrl}{SelectedMovie.Images?.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster).Url}";
+            SelectedMovieFanartUrl = $"{RadarrUrl}{SelectedMovie.Images?.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt).Url}";
         }
 
         private bool Movies_OnFilter(object obj)

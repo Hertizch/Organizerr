@@ -17,10 +17,16 @@
                 <view:SonarrView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+                <view:SettingsView />
+            </DataTemplate>
+
             <conv:BytesToSizeWithSuffixConverter x:Key="BytesToSizeWithSuffixConverter" />
             <conv:IsCutoffMetToBooleanConverter x:Key="IsCutoffMetToBooleanConverter" />
             <conv:InvertedBooleanConverter x:Key="InvertedBooleanConverter" />
             <conv:ImageSourceConverter x:Key="ImageSourceConverter" />
+            <conv:ToUpperStringConverter x:Key="ToUpperStringConverter" />
+            <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Icons.xaml" />

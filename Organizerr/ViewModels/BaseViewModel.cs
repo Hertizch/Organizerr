@@ -23,7 +23,8 @@ namespace Organizerr.ViewModels
             PageViewModels = new ObservableCollection<IPageViewModel>
             {
                 new RadarrViewModel(),
-                new SonarrViewModel()
+                new SonarrViewModel(),
+                new SettingsViewModel()
             };
 
             SelectedPageViewModel = PageViewModels[0];
@@ -44,6 +45,14 @@ namespace Organizerr.ViewModels
         /// The sonarr view model.
         /// </value>
         public SonarrViewModel SonarrViewModel { get; }
+
+        /// <summary>
+        /// Gets the settings view model.
+        /// </summary>
+        /// <value>
+        /// The settings view model.
+        /// </value>
+        public SettingsViewModel SettingsViewModel { get; }
 
         /// <summary>
         /// Gets or sets the selected page view model.

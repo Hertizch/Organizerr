@@ -26,7 +26,7 @@
 
         <!-- Menu button -->
         <Grid Background="#FF4D394B">
-            <Button Content="{StaticResource MenuIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[0]}" Style="{StaticResource SidebarButton}" Foreground="#B2FFFFFF" />
+            <Button Content="{StaticResource MenuIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[2]}" Style="{StaticResource SidebarButton}" Foreground="#B2FFFFFF" />
         </Grid>
 
         <!-- Top title -->

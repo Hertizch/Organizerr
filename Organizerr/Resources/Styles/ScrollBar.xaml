@@ -45,11 +45,11 @@
         <Setter Property="UseLayoutRounding" Value="True" />
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Vertical">
-                <Setter Property="Width" Value="12" />
+                <Setter Property="Width" Value="14" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ScrollBar}">
-                            <Border Background="#7F292929" CornerRadius="3">
+                            <Border Background="#7F292929">
                                 <Track Name="PART_Track" IsDirectionReversed="True">
                                     <Track.Thumb>
                                         <Thumb Style="{DynamicResource ScrollBarThumb}" />
@@ -61,11 +61,11 @@
                 </Setter>
             </Trigger>
             <Trigger Property="Orientation" Value="Horizontal">
-                <Setter Property="Height" Value="12" />
+                <Setter Property="Height" Value="14" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ScrollBar}">
-                            <Border Background="#7F292929" CornerRadius="3">
+                            <Border Background="#7F292929">
                                 <Track Name="PART_Track">
                                     <Track.Thumb>
                                         <Thumb Style="{DynamicResource ScrollBarThumb}" />
@@ -87,7 +87,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Border Name="Scroller" Background="#FF686868" CornerRadius="3" />
+                    <Border Name="Scroller" Background="#FF686868" />
                     <ControlTemplate.Triggers>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>

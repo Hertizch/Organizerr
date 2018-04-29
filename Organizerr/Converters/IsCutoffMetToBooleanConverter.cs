@@ -16,6 +16,7 @@ namespace Organizerr.Converters
             if (values == null) return false;
             if (values.Length < 3) return false;
             if (values[1] == DependencyProperty.UnsetValue) return false;
+            if (values[2] == DependencyProperty.UnsetValue) return false;
 
             // Movie profile ID
             long profileId = (long)values[0];

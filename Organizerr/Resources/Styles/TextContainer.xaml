@@ -6,7 +6,7 @@
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="#19FFFFFF" />
+        <Setter Property="BorderBrush" Value="#FF3E3E42" />
         <Setter Property="Background" Value="#FF2C2C2C" />
         <Setter Property="Foreground" Value="#B2FFFFFF" />
         <Setter Property="CaretBrush" Value="White" />
@@ -32,6 +32,9 @@
                                 <Setter Property="BorderBrush" Value="#33FFFFFF" />
                             </MultiTrigger.Setters>
                         </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="#FF474747" />
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -47,7 +50,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type CheckBox}">
                     <Grid Background="{TemplateBinding Background}" HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <StackPanel Orientation="Horizontal" Margin="0,3" VerticalAlignment="Center">
                             <Viewbox Width="16" Height="16">
                                 <Canvas Width="24" Height="24">
                                     <Path x:Name="Icon" Data="{DynamicResource CheckmarkFalseIcon}" Fill="#33FFFFFF" />

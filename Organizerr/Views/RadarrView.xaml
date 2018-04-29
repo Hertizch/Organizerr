@@ -11,7 +11,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              d:DataContext="{d:DesignInstance vm:RadarrViewModel, IsDesignTimeCreatable=True}"
              mc:Ignorable="d" 
-             d:DesignHeight="800" d:DesignWidth="1674.664">
+             d:DesignHeight="864" d:DesignWidth="1536">
 
     <UserControl.Resources>
         <ObjectDataProvider x:Key="MinimumAvailabilityEnumData" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
@@ -45,7 +45,7 @@
         </Grid>
 
         <!-- Movies Grid -->
-        <DataGrid x:Name="MoviesGrid" Grid.Row="1" ItemsSource="{Binding Path=MoviesView}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}" RowStyle="{StaticResource MainDataGridRow}">
+        <DataGrid x:Name="MoviesGrid" Grid.Row="1" ItemsSource="{Binding Path=MoviesView}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}" RowStyle="{StaticResource MainDataGridRow}" SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMovie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,-30,0">
             <DataGrid.Columns>
 
                 <!-- ID -->
@@ -211,80 +211,156 @@
             <!-- Details -->
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <Grid.Style>
-                            <Style TargetType="{x:Type Grid}">
-                                <Setter Property="Background">
-                                    <Setter.Value>
-                                        <ImageBrush x:Name="BgImage" ImageSource="http://192.168.1.250:7878/radarr/MediaCover/5/fanart.jpg" Stretch="UniformToFill" AlignmentY="Top" RenderOptions.BitmapScalingMode="Fant" />
-                                    </Setter.Value>
-                                </Setter>
-                                <!--
-                                <Style.Triggers>
-                                    <EventTrigger RoutedEvent="Binding.TargetUpdated">
-                                        <EventTrigger.Actions>
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.01" To="0.3" Duration="0:0:0.4">
-                                                        <DoubleAnimation.EasingFunction>
-                                                            <CubicEase EasingMode="EaseInOut" />
-                                                        </DoubleAnimation.EasingFunction>
-                                                    </DoubleAnimation>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </EventTrigger.Actions>
-                                    </EventTrigger>
-                                </Style.Triggers>
-                                -->
-                            </Style>
-                        </Grid.Style>
+                    <Border Background="#FF1A1A1A">
+                        <!-- temp disabled due to performance issues
+                        <Border.Background>
+                            <ImageBrush ImageSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMovieFanartUrl, Mode=OneWay, IsAsync=True}" Stretch="UniformToFill" AlignmentY="Top" RenderOptions.BitmapScalingMode="Fant" Opacity="0.3" />
+                        </Border.Background>
+                        -->
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
+                        <Grid Margin="25">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
 
-                        <Image Width="170" Margin="43,15,25,15" VerticalAlignment="Top" RenderOptions.BitmapScalingMode="Fant">
-                            <helpers:ImageAsyncHelper.SourceUri>
-                                <MultiBinding Converter="{StaticResource ImageSourceConverter}">
-                                    <Binding Path="Images" IsAsync="True" Mode="OneWay" />
-                                    <Binding Path="DataContext.RadarrUrl" RelativeSource="{RelativeSource AncestorType=UserControl}" />
-                                </MultiBinding>
-                            </helpers:ImageAsyncHelper.SourceUri>
-                        </Image>
+                            <!-- Poster -->
+                            <Image Width="170" Margin="0,0,25,0" VerticalAlignment="Top" Source="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMoviePosterUrl, Mode=OneWay, IsAsync=True}" RenderOptions.BitmapScalingMode="Fant" />
 
-                        <StackPanel Grid.Column="1" Margin="0,15,15,15">
-                            <TextBlock Text="File info:" FontFamily="Segoe UI Semibold" FontSize="14" />
-                            <TextBlock Text="{Binding Path=MovieFile.RelativePath, StringFormat={}Filename: {0}}" />
-                            <TextBlock Text="{Binding Path=Path, StringFormat={}Path: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.Subtitles, StringFormat={}Subtitles: {0}}" />
+                            <StackPanel Grid.Column="1">
+                                
+                                <!-- File info -->
+                                <TextBlock FontFamily="Segoe UI Semilight" FontSize="14" TextWrapping="Wrap">
+                                    <Hyperlink Foreground="#FFAE6AA7" Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.OpenFolderPathCommand}" CommandParameter="{Binding}" ToolTip="Open folder">
+                                        <Run Text="{Binding Path=Path}" />
+                                    </Hyperlink>
+                                    <Run Text="/" />
+                                    <Hyperlink Foreground="#FFAE6AA7" Command="" ToolTip="Open file">
+                                        <Run Text="{Binding Path=MovieFile.RelativePath}" />
+                                    </Hyperlink>
+                                </TextBlock>
 
-                            <TextBlock Text="Video info:" FontFamily="Segoe UI Semibold" FontSize="14" Margin="0,8,0,0" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoCodec, StringFormat={}Codec: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoBitrate, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}Bitrate: {0}ps}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoBitDepth, StringFormat={}Bit Depth: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.Width, StringFormat={}Width: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.Height, StringFormat={}Height: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.VideoFps, StringFormat={}FPS: {0}}" />
-                            <TextBlock>
-                                <TextBlock.Text>
-                                    <MultiBinding StringFormat="Runtime: {}{0}h {1}m">
-                                        <Binding Path="MovieFile.MediaInfo.RunTime.Hours"/>
-                                        <Binding Path="MovieFile.MediaInfo.RunTime.Minutes"/>
-                                    </MultiBinding>
-                                </TextBlock.Text>
-                            </TextBlock>
+                                <Grid Margin="0,15,0,0" Visibility="{Binding Path=Downloaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Video info -->
+                                    <StackPanel>
+                                        <TextBlock Text="Video info:" FontFamily="Segoe UI Semilight" FontSize="14" />
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Codec" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.VideoCodec}" />
 
-                            <TextBlock Text="Audio info:" FontFamily="Segoe UI Semibold" FontSize="14" Margin="0,8,0,0" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioFormat, StringFormat={}Format: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioChannels, StringFormat={}Channels: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioChannelPositions, StringFormat={}Channel Positions: {0}}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioBitrate, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}Bitrate: {0}ps}" />
-                            <TextBlock Text="{Binding Path=MovieFile.MediaInfo.AudioLanguages, StringFormat={}Languages: {0}}" />
-                        </StackPanel>
-                    </Grid>
+                                            <TextBlock Grid.Row="1" Text="Bitrate" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.VideoBitrate, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}{0}ps}" />
+
+                                            <TextBlock Grid.Row="2" Text="Bit Depth" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.VideoBitDepth}" />
+
+                                            <TextBlock Grid.Row="3" Text="Resolution" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1">
+                                                <Run Text="{Binding Path=MovieFile.MediaInfo.Width}" />
+                                                <Run Text="x" />
+                                                <Run Text="{Binding Path=MovieFile.MediaInfo.Height}" />
+                                                <Run Text="p" />
+                                                <Run Text="{Binding Path=MovieFile.MediaInfo.VideoFps, StringFormat={}({0} FPS)}" />
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Row="4" Text="Runtime" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="4" Grid.Column="1">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="{}{0}h {1}m">
+                                                        <Binding Path="MovieFile.MediaInfo.RunTime.Hours"/>
+                                                        <Binding Path="MovieFile.MediaInfo.RunTime.Minutes"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Audio info -->
+                                    <StackPanel Grid.Column="1" Margin="30,0,0,0">
+                                        <TextBlock Text="Audio info:" FontFamily="Segoe UI Semilight" FontSize="14" />
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="Format" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.AudioFormat}" />
+
+                                            <TextBlock Grid.Row="1" Text="Bitrate" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.AudioBitrate, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}{0}ps}" />
+
+                                            <TextBlock Grid.Row="2" Text="Profile" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.AudioProfile}" />
+
+                                            <TextBlock Grid.Row="3" Text="Channels" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1">
+                                                <Run Text="{Binding Path=MovieFile.MediaInfo.AudioChannels}" />
+                                                <Run Text="{Binding Path=MovieFile.MediaInfo.AudioChannelPositions, StringFormat={}({0})}" />
+                                            </TextBlock>
+
+                                            <TextBlock Grid.Row="4" Text="Languages" Margin="0,0,10,0" Foreground="#66FFFFFF" />
+                                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Path=MovieFile.MediaInfo.AudioLanguages}" />
+                                        </Grid>
+                                    </StackPanel>
+
+                                    <!-- Subtitles -->
+                                    <StackPanel Grid.Column="2" Margin="30,0,0,0">
+                                        <TextBlock Text="Subtitles:" FontFamily="Segoe UI Semilight" FontSize="14" />
+                                        <TextBlock Grid.Column="2" Text="{Binding Path=MovieFile.MediaInfo.Subtitles}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Extra files -->
+                                <StackPanel Margin="0,15,0,0" Visibility="{Binding Path=Downloaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="Extra files:" FontFamily="Segoe UI Semilight" FontSize="14" Margin="0,15,0,0" />
+                                    <ItemsControl ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.ExtraFiles}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Path=Type, Converter={StaticResource ToUpperStringConverter}}" Foreground="#66FFFFFF" />
+                                                    <TextBlock Text="{Binding Path=RelativePath}" Margin="10,0,0,0" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
+
+            <!-- Triggers -->
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="LoadingRowDetails">
+                    <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.GetExtraFilesCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=DataGrid}, Path=SelectedItem}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
         </DataGrid>
 
         <!-- Status bar -->
