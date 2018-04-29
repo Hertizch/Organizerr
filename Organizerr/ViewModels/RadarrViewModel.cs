@@ -26,6 +26,9 @@ namespace Organizerr.ViewModels
         private RadarrSharp.Models.Movie _selectedMovie;
         private string _selectedMoviePosterUrl;
         private string _selectedMovieFanartUrl;
+        private long _totalDiskUsage;
+        private int _missingMovieCount;
+        private RadarrSharp.Models.SystemStatus _systemStatus;
         private ICollectionView _moviesView;
         private RelayCommand _getMoviesCommand;
         private RelayCommand _getProfilesCommand;
@@ -37,6 +40,7 @@ namespace Organizerr.ViewModels
         private RelayCommand _refreshMovieCommand;
         private RelayCommand _getExtraFilesCommand;
         private RelayCommand _openFolderPathCommand;
+        private RelayCommand _getRadarrSystemInfo;
 
         public RadarrViewModel()
         {
@@ -57,6 +61,9 @@ namespace Organizerr.ViewModels
 
             // Get movies
             GetMoviesCommand.Execute(null);
+
+            // Get system info
+            GetRadarrSystemInfo.Execute(null);
 
             // Set view
             MoviesView = CollectionViewSource.GetDefaultView(Movies);
@@ -151,6 +158,33 @@ namespace Organizerr.ViewModels
             }
         }
 
+        public long TotalDiskUsage
+        {
+            get => _totalDiskUsage;
+            set
+            {
+                if (value == _totalDiskUsage) return; _totalDiskUsage = value; OnPropertyChanged();
+            }
+        }
+
+        public int MissingMovieCount
+        {
+            get => _missingMovieCount;
+            set
+            {
+                if (value == _missingMovieCount) return; _missingMovieCount = value; OnPropertyChanged();
+            }
+        }
+
+        public RadarrSharp.Models.SystemStatus SystemStatus
+        {
+            get => _systemStatus;
+            set
+            {
+                if (value == _systemStatus) return; _systemStatus = value; OnPropertyChanged();
+            }
+        }
+
         public List<RadarrSharp.Models.Profile> Profiles { get; set; }
 
         public ICollectionView MoviesView
@@ -197,6 +231,9 @@ namespace Organizerr.ViewModels
         public RelayCommand OpenFolderPathCommand =>
             _openFolderPathCommand ?? (_openFolderPathCommand = new RelayCommand(Execute_OpenFolderPathCommand, p => true));
 
+        public RelayCommand GetRadarrSystemInfo =>
+            _getRadarrSystemInfo ?? (_getRadarrSystemInfo = new RelayCommand(Execute_GetRadarrSystemInfo, p => true));
+
         private async void Execute_GetMoviesCommand(object obj)
         {
             // Initialize collection if null
@@ -216,7 +253,20 @@ namespace Organizerr.ViewModels
 
             if (movies != null)
                 foreach (var item in movies)
+                {
                     Movies.Add(item);
+
+                    // Calculate total disk usage
+                    if (item.Downloaded && item.MovieFile != null)
+                    {
+                        long size = item.MovieFile.Size;
+                        TotalDiskUsage += size == 0 ? 0 : size;
+                    }
+
+                    // calculate missing movie count
+                    if (!item.Downloaded)
+                        MissingMovieCount++;
+                }
         }
 
         private async void Execute_GetProfilesCommand(object obj)
@@ -455,6 +505,11 @@ namespace Organizerr.ViewModels
 
             if (Directory.Exists(path))
                 Process.Start(path);
+        }
+
+        private async void Execute_GetRadarrSystemInfo(object obj)
+        {
+            SystemStatus = await RadarrClient.SystemStatus.GetSystemStatus();
         }
 
         private void SetSelectedMoveImageUrls()
