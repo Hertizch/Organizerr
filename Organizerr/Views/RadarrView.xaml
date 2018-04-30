@@ -43,11 +43,11 @@
                         <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="For missing movies" Command="{Binding Path=SearchForMissingMoviesCommand}" />
                     </ComboBox.Items>
                 </ComboBox>
-                
+
                 <ComboBox Style="{StaticResource MultiButtonComboBox}" ItemContainerStyle="{StaticResource MultiButtonComboBoxItem}" Text="Unmonitor" Margin="15,0,0,0">
                     <ComboBox.Items>
                         <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All downloaded movies" />
-                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All movies where cutoff quality is met" Command="{Binding Path=UnmonitorWhereCutoffMetCommand}" />
+                        <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All movies where cutoff quality is met" Command="{Binding Path=UnmonitorWhereCutoffMetCommand}" IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.IsSettingMonitoredToFalseForCutoffMet, Converter={StaticResource InvertedBooleanConverter}}" />
                         <Button Style="{StaticResource MultiButtonComboBoxButton}" Content="All unreleased movies" />
                     </ComboBox.Items>
                 </ComboBox>
@@ -64,7 +64,7 @@
         </Grid>
 
         <!-- Movies Grid -->
-        <DataGrid x:Name="MoviesGrid" Grid.Row="1" ItemsSource="{Binding Path=MoviesView}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}" RowStyle="{StaticResource MainDataGridRow}" SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMovie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,-30,0">
+        <DataGrid x:Name="MoviesGrid" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding Path=MoviesView}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}" RowStyle="{StaticResource MainDataGridRow}" SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMovie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,-30,0">
             <DataGrid.Columns>
 
                 <!-- ID -->
@@ -98,7 +98,7 @@
                     </DataGridTemplateColumn.HeaderTemplate>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ToggleButton IsChecked="{Binding Path=Monitored}" Style="{StaticResource CheckBoxToggleButton}" Content="{Binding Path=Monitored}" IsEnabled="{Binding ElementName=RadarrViewControl, Path=DataContext.ToggleMonitoredStatusIsBusy, Converter={StaticResource InvertedBooleanConverter}}" ToolTip="Toggle Monitored status">
+                            <ToggleButton IsChecked="{Binding Path=Monitored}" Style="{StaticResource CheckBoxToggleButton}" Content="{Binding Path=Monitored}" IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.IsSettingMonitoredToFalseForCutoffMet, Converter={StaticResource InvertedBooleanConverter}}" ToolTip="Toggle Monitored status">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="Click">
                                         <i:InvokeCommandAction Command="{Binding ElementName=RadarrViewControl, Path=DataContext.ToggleMonitoredStatusCommand}" CommandParameter="{Binding}" />
@@ -170,7 +170,7 @@
                 <DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}, Mode=OneWay}" SelectedItemBinding="{Binding Path=MinimumAvailability}" MinWidth="100" Header="Min. Availability" />
 
                 <!-- Cutoff -->
-                <DataGridCheckBoxColumn Width="35" IsReadOnly="True" ElementStyle="{StaticResource NoTextCheckBox}">
+                <DataGridCheckBoxColumn Width="35" ElementStyle="{StaticResource NoTextCheckBox}">
                     <DataGridCheckBoxColumn.HeaderTemplate>
                         <DataTemplate>
                             <Border Background="Transparent" Width="25" ToolTip="Cutoff Met">
@@ -187,13 +187,6 @@
                             <Binding ElementName="RadarrViewControl" Path="DataContext.Profiles" />
                         </MultiBinding>
                     </DataGridCheckBoxColumn.Binding>
-                    <DataGridCheckBoxColumn.SortMemberPath>
-                        <MultiBinding Converter="{StaticResource IsCutoffMetToBooleanConverter}">
-                            <Binding Path="QualityProfileId" />
-                            <Binding Path="MovieFile.Quality.Quality.Id" />
-                            <Binding ElementName="RadarrViewControl" Path="DataContext.Profiles" />
-                        </MultiBinding>
-                    </DataGridCheckBoxColumn.SortMemberPath>
                 </DataGridCheckBoxColumn>
 
                 <!-- Size -->
@@ -212,7 +205,7 @@
                 <DataGridTemplateColumn Width="35" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Command="{Binding ElementName=RadarrViewControl, Path=DataContext.RefreshMovieCommand}" CommandParameter="{Binding}" Content="{StaticResource RefreshIcon}" Style="{StaticResource IconButton}" ToolTip="Search for movie" />
+                            <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.RefreshMovieCommand}" CommandParameter="{Binding}" Content="{StaticResource RefreshIcon}" Style="{StaticResource IconButton}" ToolTip="Search for movie" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -221,7 +214,7 @@
                 <DataGridTemplateColumn Width="35" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Command="{Binding ElementName=RadarrViewControl, Path=DataContext.OpenRadarrPageCommand}" CommandParameter="{Binding}" Content="{StaticResource LinkIcon}" Style="{StaticResource IconButton}" ToolTip="Open Radarr page" />
+                            <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.OpenRadarrPageCommand}" CommandParameter="{Binding}" Content="{StaticResource LinkIcon}" Style="{StaticResource IconButton}" ToolTip="Open Radarr page" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -230,7 +223,7 @@
                 <DataGridTemplateColumn Width="35" CanUserResize="False">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="{StaticResource DeleteIcon}" Style="{StaticResource IconButton}" ToolTip="Delete movie" />
+                            <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.DeleteMovieCommand}" CommandParameter="{Binding}" Content="{StaticResource DeleteIcon}" Style="{StaticResource IconButton}" ToolTip="Delete movie" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
@@ -412,8 +405,24 @@
                 <TextBlock Text="{Binding Path=TotalDiskUsage, Converter={StaticResource BytesToSizeWithSuffixConverter}, StringFormat={}Total disk usage: {0}}" Foreground="#66FFFFFF" Margin="15,3" />
             </StatusBarItem>
 
-            <StatusBarItem BorderBrush="#FF3E3E42" BorderThickness="1,0,0,0" HorizontalAlignment="Right">
+            <!-- Operation Status -->
+            <StatusBarItem>
                 <TextBlock Foreground="#FFAE6AA7" Margin="15,3">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Text" Value="Status: Not doing anything" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.IsSettingMonitoredToFalseForCutoffMet}" Value="True">
+                                    <Setter Property="Text" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.UnmonitorWhereCutoffMetCountTotal, StringFormat={}Unmonitoring {0} movies...}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StatusBarItem>
+
+            <StatusBarItem BorderBrush="#FF3E3E42" BorderThickness="1,0,0,0" HorizontalAlignment="Right">
+                <TextBlock Foreground="#66FFFFFF" Margin="15,3">
                     <Run Text="{Binding Path=SystemStatus.Version, StringFormat={}Radarr Ver. {0}}" />
                     <Run Text="{Binding Path=SystemStatus.Branch, StringFormat={}({0})}" />
                     <Run>

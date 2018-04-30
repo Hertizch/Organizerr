@@ -40,8 +40,8 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RadarrSharp, Version=1.0.24.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RadarrSharp.1.0.24\lib\netstandard2.0\RadarrSharp.dll</HintPath>
+    <Reference Include="RadarrSharp, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RadarrSharp.1.0.25\lib\netstandard2.0\RadarrSharp.dll</HintPath>
     </Reference>
     <Reference Include="SonarrSharp, Version=1.1.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SonarrSharp.1.1.4\lib\netstandard2.0\SonarrSharp.dll</HintPath>
@@ -92,7 +92,11 @@
     <Compile Include="Converters\ImageSourceConverter.cs" />
     <Compile Include="Converters\InvertedBooleanConverter.cs" />
     <Compile Include="Converters\IsCutoffMetToBooleanConverter.cs" />
+    <Compile Include="Converters\MonitorOperationStatusToStringConverter.cs" />
     <Compile Include="Converters\ToUpperStringConverter.cs" />
+    <Compile Include="DialogWindow.xaml.cs">
+      <DependentUpon>DialogWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\ObservableObject.cs" />
     <Compile Include="Extensions\RelayCommand.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
@@ -112,6 +116,10 @@
     <Compile Include="Views\SonarrView.xaml.cs">
       <DependentUpon>SonarrView.xaml</DependentUpon>
     </Compile>
+    <Page Include="DialogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
