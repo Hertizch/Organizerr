@@ -28,8 +28,6 @@ namespace Organizerr.ViewModels
             };
 
             SelectedPageViewModel = PageViewModels[0];
-
-            MessageBoxViewModel = new MessageBoxViewModel();
         }
 
         /// <summary>
@@ -55,14 +53,6 @@ namespace Organizerr.ViewModels
         /// The settings view model.
         /// </value>
         public SettingsViewModel SettingsViewModel { get; }
-
-        /// <summary>
-        /// Gets the message box view model.
-        /// </summary>
-        /// <value>
-        /// The message box view model.
-        /// </value>
-        public static MessageBoxViewModel MessageBoxViewModel { get; set; }
 
         /// <summary>
         /// Gets or sets the selected page view model.

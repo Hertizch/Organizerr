@@ -1,4 +1,5 @@
 ﻿using Organizerr.Extensions;
+using Organizerr.Properties;
 using RadarrSharp;
 using System;
 using System.Collections.Generic;
@@ -11,19 +12,26 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
-using Xceed.Wpf.DataGrid;
 
 namespace Organizerr.ViewModels
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Organizerr.Extensions.ObservableObject" />
+    /// <seealso cref="Organizerr.ViewModels.IPageViewModel" />
     public class RadarrViewModel : ObservableObject, IPageViewModel
     {
         private string _searchTerm;
+        private bool _isAddMovieOverlayVisible;
+        private string _addMovieSearchTerm;
         private bool _toggleMonitoredStatusIsBusy;
         private bool _isSettingMonitoredToFalseForCutoffMet;
         private int _unmonitorWhereCutoffMetCountProcessed;
         private int _unmonitorWhereCutoffMetCountTotal;
         private ObservableCollection<RadarrSharp.Models.Movie> _movies;
         private ObservableCollection<RadarrSharp.Models.ExtraFile> _extraFiles;
+        private ObservableCollection<RadarrSharp.Models.Movie> _addMovies;
         private RadarrSharp.Models.Movie _selectedMovie;
         private string _selectedMoviePosterUrl;
         private string _selectedMovieFanartUrl;
@@ -44,12 +52,17 @@ namespace Organizerr.ViewModels
         private RelayCommand _openFolderPathCommand;
         private RelayCommand _getRadarrSystemInfo;
         private RelayCommand _deleteMovieCommand;
+        private RelayCommand _clearSearchTermCommand;
+        private RelayCommand _addMovieSearchCommand;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RadarrViewModel"/> class.
+        /// </summary>
         public RadarrViewModel()
         {
-            RadarrClient = new RadarrClient("192.168.1.250", 7878, "43bdebe9f37b4d20bd5c37834ddb8ac2", "radarr")
+            RadarrClient = new RadarrClient(Settings.Default.RadarrHost, Settings.Default.RadarrPort, Settings.Default.RadarrApiKey, Settings.Default.RadarrUrlBase)
             {
-                WriteDebug = true
+                WriteDebug = false
             };
 
             // Set Radarr URL
@@ -72,6 +85,10 @@ namespace Organizerr.ViewModels
             MoviesView = CollectionViewSource.GetDefaultView(Movies);
             MoviesView.SortDescriptions.Add(new SortDescription(nameof(RadarrSharp.Models.Movie.SortTitle), ListSortDirection.Ascending));
             MoviesView.Filter = new Predicate<object>(Movies_OnFilter);
+
+            /*IsAddMovieOverlayVisible = true;
+            AddMovieSearchTerm = "matrix";
+            AddMovieSearchCommand.Execute(null);*/
         }
 
         /// <summary>
@@ -92,6 +109,30 @@ namespace Organizerr.ViewModels
         {
             get => _searchTerm;
             set { if (value == _searchTerm) return; _searchTerm = value; OnPropertyChanged(); MoviesView.Refresh(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is add movie overlay visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is add movie overlay visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAddMovieOverlayVisible
+        {
+            get => _isAddMovieOverlayVisible;
+            set { if (value == _isAddMovieOverlayVisible) return; _isAddMovieOverlayVisible = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the add movie search term.
+        /// </summary>
+        /// <value>
+        /// The add movie search term.
+        /// </value>
+        public string AddMovieSearchTerm
+        {
+            get => _addMovieSearchTerm;
+            set { if (value == _addMovieSearchTerm) return; _addMovieSearchTerm = value; OnPropertyChanged(); }
         }
 
         /// <summary>
@@ -180,6 +221,18 @@ namespace Organizerr.ViewModels
         {
             get => _extraFiles;
             set { if (value == _extraFiles) return; _extraFiles = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the add movies.
+        /// </summary>
+        /// <value>
+        /// The add movies.
+        /// </value>
+        public ObservableCollection<RadarrSharp.Models.Movie> AddMovies
+        {
+            get => _addMovies;
+            set { if (value == _addMovies) return; _addMovies = value; OnPropertyChanged(); }
         }
 
         /// <summary>
@@ -314,6 +367,12 @@ namespace Organizerr.ViewModels
 
         public RelayCommand DeleteMovieCommand =>
             _deleteMovieCommand ?? (_deleteMovieCommand = new RelayCommand(Execute_DeleteMovieCommand, p => true));
+
+        public RelayCommand ClearSearchTermCommand =>
+            _clearSearchTermCommand ?? (_clearSearchTermCommand = new RelayCommand(Execute_ClearSearchTermCommand, p => true));
+
+        public RelayCommand AddMovieSearchCommand =>
+            _addMovieSearchCommand ?? (_addMovieSearchCommand = new RelayCommand(Execute_AddMovieSearchCommand, p => true));
 
         /// <summary>
         /// Executes the get movies command.
@@ -530,7 +589,7 @@ namespace Organizerr.ViewModels
             // Get movie object
             var movie = (RadarrSharp.Models.Movie)obj;
 
-            var command = await RadarrClient.Command.MoviesSearch(new int[] { int.Parse(movie.Id.ToString()) });
+            var command = await RadarrClient.Command.MoviesSearch(new int[] { movie.Id });
             if (command != null)
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Command '{command.Name}' (ID: {command.Id}) started successfully");
             else
@@ -566,7 +625,7 @@ namespace Organizerr.ViewModels
             var movie = (RadarrSharp.Models.Movie)obj;
 
             // Run command
-            var command = await RadarrClient.Command.RefreshMovie(int.Parse(movie.Id.ToString()));
+            var command = await RadarrClient.Command.RefreshMovie(movie.Id);
 
             // Check for success
             if (command != null)
@@ -599,7 +658,7 @@ namespace Organizerr.ViewModels
                 return;
 
             // Get extra files object collection
-            var extraFiles = await RadarrClient.ExtraFile.GetExtraFiles(int.Parse(movie.Id.ToString()));
+            var extraFiles = await RadarrClient.ExtraFile.GetExtraFiles(movie.Id);
 
             // Check for success
             if (extraFiles != null)
@@ -668,12 +727,43 @@ namespace Organizerr.ViewModels
 
             try
             {
-                await RadarrClient.Movie.DeleteMovie(int.Parse(movie.Id.ToString()));
+                await RadarrClient.Movie.DeleteMovie(movie.Id);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Operation has failed - {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Executes the add movie search command.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        private async void Execute_AddMovieSearchCommand(object obj)
+        {
+            if (string.IsNullOrWhiteSpace(AddMovieSearchTerm))
+                return;
+
+            if (AddMovies == null)
+                AddMovies = new ObservableCollection<RadarrSharp.Models.Movie>();
+
+            if (AddMovies.Count > 0)
+                AddMovies.Clear();
+
+            var movies = await RadarrClient.Movie.SearchForMovie(AddMovieSearchTerm);
+
+            if (movies != null)
+                foreach (var item in movies)
+                    AddMovies.Add(item);
+        }
+
+        /// <summary>
+        /// Executes the clear search term command.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        private void Execute_ClearSearchTermCommand(object obj)
+        {
+            SearchTerm = string.Empty;
         }
 
         /// <summary>
@@ -694,9 +784,11 @@ namespace Organizerr.ViewModels
 
         private bool Movies_OnFilter(object obj)
         {
-            if (string.IsNullOrWhiteSpace(SearchTerm)) return true;
-
             var movie = (RadarrSharp.Models.Movie)obj;
+
+            // if no text in search term
+            if (string.IsNullOrWhiteSpace(SearchTerm))
+                return true;
 
             // radarr id
             if (SearchTerm.StartsWith("id:"))

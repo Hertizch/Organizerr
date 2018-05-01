@@ -24,10 +24,11 @@
             <conv:BytesToSizeWithSuffixConverter x:Key="BytesToSizeWithSuffixConverter" />
             <conv:IsCutoffMetToBooleanConverter x:Key="IsCutoffMetToBooleanConverter" />
             <conv:InvertedBooleanConverter x:Key="InvertedBooleanConverter" />
-            <conv:ImageSourceConverter x:Key="ImageSourceConverter" />
             <conv:ToUpperStringConverter x:Key="ToUpperStringConverter" />
             <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
             <conv:MonitorOperationStatusToStringConverter x:Key="MonitorOperationStatusToStringConverter" />
+            <conv:HasValueToVisibilityConverter x:Key="HasValueToVisibilityConverter" />
+            <conv:WidthConverter x:Key="WidthConverter" />
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Icons.xaml" />

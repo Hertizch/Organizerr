@@ -27,11 +27,11 @@
 
         <!-- Menu button -->
         <Grid Background="#FF4D394B">
-            <Button Content="{StaticResource MenuIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[2]}" Style="{StaticResource SidebarButton}" Foreground="#B2FFFFFF" />
+            <Button Content="{StaticResource MenuIcon}" Command="{Binding Path=ChangePageViewModelCommand}" CommandParameter="{Binding Path=PageViewModels[2]}" Style="{StaticResource SidebarButton}" Foreground="White" />
         </Grid>
 
         <!-- Top title -->
-        <DockPanel Grid.Column="1" Background="#FF080304">
+        <DockPanel Grid.Column="1" Background="Black">
             <TextBlock Text="ORGANIZERR" VerticalAlignment="Center" Margin="30,0" Foreground="#66FFFFFF" />
             <Rectangle Width="1" Fill="#FF3E3E42" Margin="0,8" />
             <TextBlock Text="{Binding Path=SelectedPageViewModel.Name}" VerticalAlignment="Center" Margin="30,0" Foreground="#66FFFFFF" />

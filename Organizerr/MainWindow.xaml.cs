@@ -11,6 +11,13 @@ namespace Organizerr
         public MainWindow()
         {
             InitializeComponent();
+
+            Height = SystemParameters.WorkArea.Height * 0.8;
+
+            if (SystemParameters.WorkArea.Width > 2560)
+                Width = SystemParameters.WorkArea.Width * 0.6;
+            else
+                Width = SystemParameters.WorkArea.Width * 0.8;
         }
 
         private void CloseCommandHandler(object sender, ExecutedRoutedEventArgs e)

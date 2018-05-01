@@ -40,8 +40,8 @@
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="RadarrSharp, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RadarrSharp.1.0.25\lib\netstandard2.0\RadarrSharp.dll</HintPath>
+    <Reference Include="RadarrSharp, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RadarrSharp.1.0.26\lib\netstandard2.0\RadarrSharp.dll</HintPath>
     </Reference>
     <Reference Include="SonarrSharp, Version=1.1.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\SonarrSharp.1.1.4\lib\netstandard2.0\SonarrSharp.dll</HintPath>
@@ -89,7 +89,8 @@
     </ApplicationDefinition>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\BytesToSizeWithSuffixConverter.cs" />
-    <Compile Include="Converters\ImageSourceConverter.cs" />
+    <Compile Include="Converters\WidthConverter.cs" />
+    <Compile Include="Converters\HasValueToVisibilityConverter.cs" />
     <Compile Include="Converters\InvertedBooleanConverter.cs" />
     <Compile Include="Converters\IsCutoffMetToBooleanConverter.cs" />
     <Compile Include="Converters\MonitorOperationStatusToStringConverter.cs" />
@@ -100,10 +101,8 @@
     <Compile Include="Extensions\ObservableObject.cs" />
     <Compile Include="Extensions\RelayCommand.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
-    <Compile Include="Helpers\ImageAsyncHelper.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\IPageViewModel.cs" />
-    <Compile Include="ViewModels\MessageBoxViewModel.cs" />
     <Compile Include="ViewModels\RadarrViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="ViewModels\SonarrViewModel.cs" />
@@ -200,8 +199,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

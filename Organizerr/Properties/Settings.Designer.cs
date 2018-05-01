@@ -166,5 +166,29 @@ namespace Organizerr.Properties {
                 this["SonarrApiKey"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RadarrHideDownloaded {
+            get {
+                return ((bool)(this["RadarrHideDownloaded"]));
+            }
+            set {
+                this["RadarrHideDownloaded"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RadarrHideUnmonitored {
+            get {
+                return ((bool)(this["RadarrHideUnmonitored"]));
+            }
+            set {
+                this["RadarrHideUnmonitored"] = value;
+            }
+        }
     }
 }

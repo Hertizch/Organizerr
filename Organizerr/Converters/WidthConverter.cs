@@ -8,7 +8,7 @@ namespace Organizerr.Converters
     /// 
     /// </summary>
     /// <seealso cref="System.Windows.Data.IValueConverter" />
-    public class ToUpperStringConverter : IValueConverter
+    public class WidthConverter : IValueConverter
     {
         /// <summary>
         /// Converts a value.
@@ -22,9 +22,10 @@ namespace Organizerr.Converters
         /// </returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null) return null;
+            if (value == null) return 0;
 
-            return value.ToString().ToUpper();
+            // 45%
+            return (double)value * 0.45;
         }
 
         /// <summary>

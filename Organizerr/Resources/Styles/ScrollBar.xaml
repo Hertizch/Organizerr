@@ -43,13 +43,14 @@
     <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Vertical">
                 <Setter Property="Width" Value="14" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ScrollBar}">
-                            <Border Background="#7F292929">
+                            <Border Background="{TemplateBinding Background}">
                                 <Track Name="PART_Track" IsDirectionReversed="True">
                                     <Track.Thumb>
                                         <Thumb Style="{DynamicResource ScrollBarThumb}" />

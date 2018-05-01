@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 
 namespace Organizerr.Converters
@@ -8,7 +9,7 @@ namespace Organizerr.Converters
     /// 
     /// </summary>
     /// <seealso cref="System.Windows.Data.IValueConverter" />
-    public class ToUpperStringConverter : IValueConverter
+    public class HasValueToVisibilityConverter : IValueConverter
     {
         /// <summary>
         /// Converts a value.
@@ -22,9 +23,13 @@ namespace Organizerr.Converters
         /// </returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value == null) return null;
+            if (value == null) return Visibility.Collapsed;
 
-            return value.ToString().ToUpper();
+            // If string is not null then visible
+            if (value is string && !string.IsNullOrWhiteSpace((string)value))
+                return Visibility.Visible;
+
+            return Visibility.Collapsed;
         }
 
         /// <summary>
