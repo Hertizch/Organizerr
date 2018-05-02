@@ -68,7 +68,7 @@
         </Grid>
 
         <!-- Movies Grid -->
-        <DataGrid x:Name="MoviesGrid" Grid.Row="2" SelectionMode="Single" ItemsSource="{Binding Path=MoviesView, Mode=OneWay, IsAsync=True}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}"
+        <DataGrid x:Name="MoviesGrid" Grid.Row="2" SelectionMode="Single" ItemsSource="{Binding Path=MoviesView, IsAsync=True}" Style="{StaticResource MainDataGrid}" CellStyle="{StaticResource MainDataGridCell}" ColumnHeaderStyle="{StaticResource MainDataGridColumnHeader}"
                   SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=DataContext.SelectedMovie, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,-30,0">
             <DataGrid.Columns>
 
@@ -157,7 +157,7 @@
                 <DataGridTextColumn Binding="{Binding Path=MovieFile.Quality.Quality.Name}" Header="Quality" Width="100" IsReadOnly="True" />
 
                 <!-- Min availability -->
-                <DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}, Mode=OneWay}" SelectedItemBinding="{Binding Path=MinimumAvailability}" Width="110" Header="Min. Availability" />
+                <DataGridComboBoxColumn ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}}" SelectedItemBinding="{Binding Path=MinimumAvailability}" Width="110" Header="Min. Availability" />
 
                 <!-- Cutoff -->
                 <DataGridCheckBoxColumn Width="35" ElementStyle="{StaticResource NoTextCheckBox}">
@@ -226,7 +226,7 @@
                     <Border Background="#FF1A1A1A">
                         <Border>
                             <Border.Background>
-                                <ImageBrush ImageSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedMovieFanartUrl, Mode=OneTime, IsAsync=True}" Stretch="UniformToFill" AlignmentY="Top" RenderOptions.BitmapScalingMode="Fant" Opacity="0.3" />
+                                <ImageBrush ImageSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedMovieFanartUrl, IsAsync=True}" Stretch="UniformToFill" AlignmentY="Top" RenderOptions.BitmapScalingMode="Fant" Opacity="0.3" />
                             </Border.Background>
 
                             <Grid Margin="25">
@@ -236,7 +236,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Poster -->
-                                <Image Width="170" Margin="0,0,25,0" VerticalAlignment="Top" Source="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedMoviePosterUrl, Mode=OneTime, IsAsync=True}" RenderOptions.BitmapScalingMode="Fant" />
+                                <Image Width="170" Margin="0,0,25,0" VerticalAlignment="Top" Source="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedMoviePosterUrl, IsAsync=True}" RenderOptions.BitmapScalingMode="Fant" />
 
                                 <StackPanel Grid.Column="1">
 
@@ -418,14 +418,17 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Add Movie" Foreground="White" FontFamily="Segoe UI Semilight" FontSize="24" />
+                    <DockPanel>
+                        <TextBlock Text="Add Movie" Foreground="White" FontFamily="Segoe UI Semilight" FontSize="24" />
+                        <ToggleButton Style="{StaticResource TitlebarToggleButton}" IsChecked="{Binding Path=IsAddMovieOverlayVisible, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Right" Content="{StaticResource WindowCloseIcon}" Foreground="#B2FFFFFF" />
+                    </DockPanel>
 
-                    <TextBox Grid.Row="1" Style="{StaticResource DefaultTextBox}" Text="{Binding Path=AddMovieSearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,15" />
+                    <TextBox Grid.Row="1" Style="{StaticResource DefaultTextBox}" Text="{Binding Path=MovieDiscoverySearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,15" />
 
-                    <Button Grid.Row="2" Content="Search" Padding="5" HorizontalAlignment="Right" Command="{Binding Path=AddMovieSearchCommand}" />
+                    <Button Grid.Row="2" Content="Search" Padding="5" HorizontalAlignment="Right" Command="{Binding Path=MovieDiscoverySearchCommand}" />
 
-                    <ScrollViewer Grid.Row="3" Margin="0,30,0,0">
-                        <ItemsControl ItemsSource="{Binding Path=AddMovies, IsAsync=True}">
+                    <ScrollViewer Grid.Row="3" Margin="0,30,-30,0">
+                        <ItemsControl ItemsSource="{Binding Path=MovieDiscoveryMoviesView, IsAsync=True}" Margin="0,0,15,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="#FF171717" Margin="0,0,0,1">
@@ -449,10 +452,63 @@
                                                 <TextBlock Text="{Binding Path=Overview}" Foreground="#B2FFFFFF" TextWrapping="Wrap" Margin="0,15,0,0" />
                                             </StackPanel>
 
-                                            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                                                <Button Style="{StaticResource TextLinkButton}" Content="Add" />
-                                                <Button Style="{StaticResource TextLinkButton}" Content="Add and search" Margin="5,0,0,0" />
-                                            </StackPanel>
+                                            <Grid Grid.Row="1" Grid.Column="1" Margin="30,15,0,0">
+                                                <Grid.IsEnabled>
+                                                    <MultiBinding Converter="{StaticResource ExistsInCollectionToBooleanConverter}">
+                                                        <Binding Path="TmdbId" />
+                                                        <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=UserControl}" Path="DataContext.Movies" />
+                                                    </MultiBinding>
+                                                </Grid.IsEnabled>
+
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition MinWidth="150" />
+                                                    <ColumnDefinition MinWidth="100" />
+                                                    <ColumnDefinition MinWidth="100" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+                                                
+                                                <!-- Root folders -->
+                                                <TextBlock Text="Root folder:" Foreground="LightGray" />
+                                                <ComboBox Grid.Row="1" Style="{StaticResource DefaultComboBox}" ItemContainerStyle="{StaticResource DefaultComboBoxItem}" ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.RootFolders}" SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedRootFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Path" />
+
+                                                <!-- Min availabilities -->
+                                                <TextBlock Grid.Column="1" Text="Min availability:" Foreground="LightGray" Margin="5,0,0,0" />
+                                                <ComboBox Grid.Column="1" Grid.Row="1" Style="{StaticResource DefaultComboBox}" ItemContainerStyle="{StaticResource DefaultComboBoxItem}" ItemsSource="{Binding Source={StaticResource MinimumAvailabilityEnumData}}" SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedMinimumAvailability, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" />
+                                                
+                                                <!-- Profiles -->
+                                                <TextBlock Grid.Column="2" Text="Profile:" Foreground="LightGray" Margin="5,0,0,0" />
+                                                <ComboBox Grid.Column="2" Grid.Row="1" Style="{StaticResource DefaultComboBox}" ItemContainerStyle="{StaticResource DefaultComboBoxItem}" ItemsSource="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.Profiles}" SelectedItem="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.SelectedProfile, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" DisplayMemberPath="Name" Margin="5,0,0,0" />
+
+                                                <!-- Monitor -->
+                                                <CheckBox Grid.Column="3" Grid.Row="1" Style="{StaticResource DefaultCheckBox}" Content="Monitored" IsChecked="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.MovieDiscoveryIsMonitored, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="5,0,0,0" />
+
+                                                <!-- add buttons -->
+                                                <StackPanel Grid.Column="4" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="30,0,0,0">
+                                                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=DataContext.MovieDiscoveryAddMovieCommand}" CommandParameter="{Binding}">
+                                                        <Button.Style>
+                                                            <Style TargetType="{x:Type Button}" BasedOn="{StaticResource TextLinkButton}">
+                                                                <Setter Property="Content" Value="Add" />
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsEnabled" Value="False">
+                                                                        <Setter Property="Content" Value="Already exists" />
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <Button.IsEnabled>
+                                                            <MultiBinding Converter="{StaticResource ExistsInCollectionToBooleanConverter}">
+                                                                <Binding Path="TmdbId" />
+                                                                <Binding RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=UserControl}" Path="DataContext.Movies" />
+                                                            </MultiBinding>
+                                                        </Button.IsEnabled>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
 
                                         </Grid>
                                     </Border>

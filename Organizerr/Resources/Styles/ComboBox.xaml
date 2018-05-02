@@ -132,4 +132,107 @@
         </Setter>
     </Style>
 
+    <Style x:Key="DefaultComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="ClickMode" Value="Press" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="#FF4D394B" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="Padding" Value="8,0,0,1" />
+        <Setter Property="Height" Value="25" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border Height="{TemplateBinding Height}" MinWidth="{TemplateBinding MinWidth}">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="3">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="25" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                <Border Grid.Column="1" Background="Transparent" ToolTip="Cutoff Met">
+                                    <Border Background="Transparent" Width="10" Height="10">
+                                        <Path x:Name="Icon" Data="{StaticResource ChevronDownIcon}" Fill="{TemplateBinding Foreground}" Stretch="Uniform" />
+                                    </Border>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="Background" Value="#B24D394B" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="Background" Value="#B24D394B" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Icon" Property="Data" Value="{StaticResource ChevronUpIcon}" />
+                            <Setter Property="Background" Value="#B24D394B" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="#FF404040" />
+                            <Setter Property="Foreground" Value="#1EFFFFFF" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DefaultComboBox" TargetType="{x:Type ComboBox}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+                        <ToggleButton Style="{DynamicResource DefaultComboBoxToggleButton}" IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" Content="{TemplateBinding Text}" />
+                        <Popup x:Name="PART_Popup" Grid.Row="1" IsOpen="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}" PopupAnimation="Scroll" Placement="Bottom" MinWidth="{Binding Path=ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border Background="{TemplateBinding Background}">
+                                <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DefaultComboBoxItem" TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Foreground" Value="#B2FFFFFF" />
+        <Setter Property="Background" Value="Black" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Border Margin="10,5">
+                            <ContentPresenter  />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="Background" Value="#B24D394B" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

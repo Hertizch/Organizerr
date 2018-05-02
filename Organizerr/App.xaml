@@ -29,6 +29,7 @@
             <conv:MonitorOperationStatusToStringConverter x:Key="MonitorOperationStatusToStringConverter" />
             <conv:HasValueToVisibilityConverter x:Key="HasValueToVisibilityConverter" />
             <conv:WidthConverter x:Key="WidthConverter" />
+            <conv:ExistsInCollectionToBooleanConverter x:Key="ExistsInCollectionToBooleanConverter" />
 
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Icons.xaml" />

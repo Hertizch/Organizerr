@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 
 namespace Organizerr.ViewModels
@@ -18,21 +16,30 @@ namespace Organizerr.ViewModels
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Organizerr.Extensions.ObservableObject" />
-    /// <seealso cref="Organizerr.ViewModels.IPageViewModel" />
+    /// <seealso cref="ObservableObject" />
+    /// <seealso cref="IPageViewModel" />
     public class RadarrViewModel : ObservableObject, IPageViewModel
     {
+        // movie discovery
+        private RadarrSharp.Models.RootFolder _selectedRootFolder;
+        private RadarrSharp.Enums.MinimumAvailability _selectedMinimumAvailability;
+        private bool _movieDiscoveryIsMonitored;
+        private bool _movieDiscoverySearchForMovie;
+        private string _movieDiscoverySearchTerm;
+        private ObservableCollection<RadarrSharp.Models.Movie> _movieDiscoveryMovies;
+        private ICollectionView _movieDiscoveryMoviesView;
+
         private string _searchTerm;
         private bool _isAddMovieOverlayVisible;
-        private string _addMovieSearchTerm;
         private bool _toggleMonitoredStatusIsBusy;
         private bool _isSettingMonitoredToFalseForCutoffMet;
         private int _unmonitorWhereCutoffMetCountProcessed;
         private int _unmonitorWhereCutoffMetCountTotal;
         private ObservableCollection<RadarrSharp.Models.Movie> _movies;
         private ObservableCollection<RadarrSharp.Models.ExtraFile> _extraFiles;
-        private ObservableCollection<RadarrSharp.Models.Movie> _addMovies;
+        private ObservableCollection<RadarrSharp.Models.RootFolder> _rootFolders;
         private RadarrSharp.Models.Movie _selectedMovie;
+        private RadarrSharp.Models.Profile _selectedProfile;
         private string _selectedMoviePosterUrl;
         private string _selectedMovieFanartUrl;
         private long _totalDiskUsage;
@@ -40,6 +47,8 @@ namespace Organizerr.ViewModels
         private RadarrSharp.Models.SystemStatus _systemStatus;
         private ICollectionView _moviesView;
 
+        // commands
+        private RelayCommand _getRootFoldersCommand;
         private RelayCommand _getMoviesCommand;
         private RelayCommand _getProfilesCommand;
         private RelayCommand _toggleMonitoredStatusCommand;
@@ -53,7 +62,8 @@ namespace Organizerr.ViewModels
         private RelayCommand _getRadarrSystemInfo;
         private RelayCommand _deleteMovieCommand;
         private RelayCommand _clearSearchTermCommand;
-        private RelayCommand _addMovieSearchCommand;
+        private RelayCommand _movieDiscoverySearchCommand;
+        private RelayCommand _movieDiscoveryAddMovieCommand;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RadarrViewModel"/> class.
@@ -72,6 +82,15 @@ namespace Organizerr.ViewModels
             sb.Append($"://{RadarrClient.Host}:{RadarrClient.Port}");
             RadarrUrl = sb.ToString();
 
+            RootFolders = new ObservableCollection<RadarrSharp.Models.RootFolder>();
+            Profiles = new List<RadarrSharp.Models.Profile>();
+            Movies = new ObservableCollection<RadarrSharp.Models.Movie>();
+            MovieDiscoveryMovies = new ObservableCollection<RadarrSharp.Models.Movie>();
+            ExtraFiles = new ObservableCollection<RadarrSharp.Models.ExtraFile>();
+
+            // Get root folder path
+            GetRootFoldersCommand.Execute(null);
+
             // Get profiles
             GetProfilesCommand.Execute(null);
 
@@ -86,9 +105,11 @@ namespace Organizerr.ViewModels
             MoviesView.SortDescriptions.Add(new SortDescription(nameof(RadarrSharp.Models.Movie.SortTitle), ListSortDirection.Ascending));
             MoviesView.Filter = new Predicate<object>(Movies_OnFilter);
 
-            /*IsAddMovieOverlayVisible = true;
-            AddMovieSearchTerm = "matrix";
-            AddMovieSearchCommand.Execute(null);*/
+            MovieDiscoveryMoviesView = CollectionViewSource.GetDefaultView(MovieDiscoveryMovies);
+
+            //IsAddMovieOverlayVisible = true;
+            //AddMovieSearchTerm = "matrix";
+            //MovieDiscoverySearchCommand.Execute(null);
         }
 
         /// <summary>
@@ -98,6 +119,54 @@ namespace Organizerr.ViewModels
         /// The name.
         /// </value>
         public string Name => "RADARR";
+
+        /// <summary>
+        /// Gets or sets the selected root folder.
+        /// </summary>
+        /// <value>
+        /// The selected root folder.
+        /// </value>
+        public RadarrSharp.Models.RootFolder SelectedRootFolder
+        {
+            get => _selectedRootFolder;
+            set { if (value == _selectedRootFolder) return; _selectedRootFolder = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected minimum availability.
+        /// </summary>
+        /// <value>
+        /// The selected minimum availability.
+        /// </value>
+        public RadarrSharp.Enums.MinimumAvailability SelectedMinimumAvailability
+        {
+            get => _selectedMinimumAvailability;
+            set { if (value == _selectedMinimumAvailability) return; _selectedMinimumAvailability = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [movie discovery is monitored].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [movie discovery is monitored]; otherwise, <c>false</c>.
+        /// </value>
+        public bool MovieDiscoveryIsMonitored
+        {
+            get => _movieDiscoveryIsMonitored;
+            set { if (value == _movieDiscoveryIsMonitored) return; _movieDiscoveryIsMonitored = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [movie discovery search for movie].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [movie discovery search for movie]; otherwise, <c>false</c>.
+        /// </value>
+        public bool MovieDiscoverySearchForMovie
+        {
+            get => _movieDiscoverySearchForMovie;
+            set { if (value == _movieDiscoverySearchForMovie) return; _movieDiscoverySearchForMovie = value; OnPropertyChanged(); }
+        }
 
         /// <summary>
         /// Gets or sets the search term.
@@ -124,15 +193,15 @@ namespace Organizerr.ViewModels
         }
 
         /// <summary>
-        /// Gets or sets the add movie search term.
+        /// Gets or sets the movie discovery search term.
         /// </summary>
         /// <value>
-        /// The add movie search term.
+        /// The movie discovery search term.
         /// </value>
-        public string AddMovieSearchTerm
+        public string MovieDiscoverySearchTerm
         {
-            get => _addMovieSearchTerm;
-            set { if (value == _addMovieSearchTerm) return; _addMovieSearchTerm = value; OnPropertyChanged(); }
+            get => _movieDiscoverySearchTerm;
+            set { if (value == _movieDiscoverySearchTerm) return; _movieDiscoverySearchTerm = value; OnPropertyChanged(); }
         }
 
         /// <summary>
@@ -229,10 +298,22 @@ namespace Organizerr.ViewModels
         /// <value>
         /// The add movies.
         /// </value>
-        public ObservableCollection<RadarrSharp.Models.Movie> AddMovies
+        public ObservableCollection<RadarrSharp.Models.Movie> MovieDiscoveryMovies
         {
-            get => _addMovies;
-            set { if (value == _addMovies) return; _addMovies = value; OnPropertyChanged(); }
+            get => _movieDiscoveryMovies;
+            set { if (value == _movieDiscoveryMovies) return; _movieDiscoveryMovies = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the root folders.
+        /// </summary>
+        /// <value>
+        /// The root folders.
+        /// </value>
+        public ObservableCollection<RadarrSharp.Models.RootFolder> RootFolders
+        {
+            get => _rootFolders;
+            set { if (value == _rootFolders) return; _rootFolders = value; OnPropertyChanged(); }
         }
 
         /// <summary>
@@ -245,6 +326,18 @@ namespace Organizerr.ViewModels
         {
             get => _selectedMovie;
             set { if (value == _selectedMovie) return; _selectedMovie = value; OnPropertyChanged(); SetSelectedMoveImageUrls(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the selected profile.
+        /// </summary>
+        /// <value>
+        /// The selected profile.
+        /// </value>
+        public RadarrSharp.Models.Profile SelectedProfile
+        {
+            get => _selectedProfile;
+            set { if (value == _selectedProfile) return; _selectedProfile = value; OnPropertyChanged(); }
         }
 
         /// <summary>
@@ -327,10 +420,25 @@ namespace Organizerr.ViewModels
             set { if (value == _moviesView) return; _moviesView = value; OnPropertyChanged(); }
         }
 
+        /// <summary>
+        /// Gets or sets the movie discovery movies view.
+        /// </summary>
+        /// <value>
+        /// The movie discovery movies view.
+        /// </value>
+        public ICollectionView MovieDiscoveryMoviesView
+        {
+            get => _movieDiscoveryMoviesView;
+            set { if (value == _movieDiscoveryMoviesView) return; _movieDiscoveryMoviesView = value; OnPropertyChanged(); }
+        }
+
 
         /*
          * Commands
          */
+
+        public RelayCommand GetRootFoldersCommand =>
+            _getRootFoldersCommand ?? (_getRootFoldersCommand = new RelayCommand(Execute_GetRootFoldersCommand, p => true));
 
         public RelayCommand GetMoviesCommand =>
             _getMoviesCommand ?? (_getMoviesCommand = new RelayCommand(Execute_GetMoviesCommand, p => true));
@@ -371,8 +479,41 @@ namespace Organizerr.ViewModels
         public RelayCommand ClearSearchTermCommand =>
             _clearSearchTermCommand ?? (_clearSearchTermCommand = new RelayCommand(Execute_ClearSearchTermCommand, p => true));
 
-        public RelayCommand AddMovieSearchCommand =>
-            _addMovieSearchCommand ?? (_addMovieSearchCommand = new RelayCommand(Execute_AddMovieSearchCommand, p => true));
+        public RelayCommand MovieDiscoverySearchCommand =>
+            _movieDiscoverySearchCommand ?? (_movieDiscoverySearchCommand = new RelayCommand(Execute_MovieDiscoverySearchCommand, p => true));
+
+        public RelayCommand MovieDiscoveryAddMovieCommand =>
+            _movieDiscoveryAddMovieCommand ?? (_movieDiscoveryAddMovieCommand = new RelayCommand(Execute_MovieDiscoveryAddMovieCommand, p => true));
+
+
+        /// <summary>
+        /// Executes the get root folders command.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        private async void Execute_GetRootFoldersCommand(object obj)
+        {
+            IList<RadarrSharp.Models.RootFolder> rootFolders = new List<RadarrSharp.Models.RootFolder>();
+
+            try
+            {
+                rootFolders = await RadarrClient.RootFolder.GetRootFolders();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] [Execute_GetRootFolderPathCommand] Operation has failed - {ex.Message}");
+            }
+
+            // Add all items to collection
+            if (rootFolders != null)
+                foreach (var item in rootFolders)
+                    RootFolders.Add(item);
+
+            // Set first item as selected
+            if (RootFolders.Count > 0)
+                SelectedRootFolder = rootFolders.FirstOrDefault();
+
+            Debug.WriteLine($"[INFO] [Execute_GetRootFolderPathCommand] RootFolderPath set to '{SelectedRootFolder.Path}'");
+        }
 
         /// <summary>
         /// Executes the get movies command.
@@ -380,10 +521,6 @@ namespace Organizerr.ViewModels
         /// <param name="obj">The object.</param>
         private async void Execute_GetMoviesCommand(object obj)
         {
-            // Initialize collection if null
-            if (Movies == null)
-                Movies = new ObservableCollection<RadarrSharp.Models.Movie>();
-
             IList<RadarrSharp.Models.Movie> movies = new List<RadarrSharp.Models.Movie>();
 
             try
@@ -419,10 +556,6 @@ namespace Organizerr.ViewModels
         /// <param name="obj">The object.</param>
         private async void Execute_GetProfilesCommand(object obj)
         {
-            // Initialize collection if null
-            if (Profiles == null)
-                Profiles = new List<RadarrSharp.Models.Profile>();
-
             IList<RadarrSharp.Models.Profile> profiles = new List<RadarrSharp.Models.Profile>();
 
             try
@@ -434,9 +567,14 @@ namespace Organizerr.ViewModels
                 Debug.WriteLine($"[ERROR] [Execute_GetProfilesCommand] Operation has failed - {ex.Message}");
             }
 
+            // Add all items to collection
             if (profiles != null)
                 foreach (var item in profiles)
                     Profiles.Add(item);
+
+            // Set first item as selected
+            if (Profiles.Count > 0)
+                SelectedProfile = Profiles.FirstOrDefault();
         }
 
         /// <summary>
@@ -643,10 +781,6 @@ namespace Organizerr.ViewModels
             if (obj == null)
                 return;
 
-            // Initialize collection if null
-            if (ExtraFiles == null)
-                ExtraFiles = new ObservableCollection<RadarrSharp.Models.ExtraFile>();
-
             // Clear collection
             ExtraFiles.Clear();
 
@@ -700,7 +834,14 @@ namespace Organizerr.ViewModels
         /// <param name="obj">The object.</param>
         private async void Execute_GetRadarrSystemInfo(object obj)
         {
-            SystemStatus = await RadarrClient.SystemStatus.GetSystemStatus();
+            try
+            {
+                SystemStatus = await RadarrClient.SystemStatus.GetSystemStatus();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[INFO] [Execute_GetRadarrSystemInfo] Operation has failed - {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -736,25 +877,65 @@ namespace Organizerr.ViewModels
         }
 
         /// <summary>
-        /// Executes the add movie search command.
+        /// Executes the movie discovery search command.
         /// </summary>
         /// <param name="obj">The object.</param>
-        private async void Execute_AddMovieSearchCommand(object obj)
+        private async void Execute_MovieDiscoverySearchCommand(object obj)
         {
-            if (string.IsNullOrWhiteSpace(AddMovieSearchTerm))
+            if (string.IsNullOrWhiteSpace(MovieDiscoverySearchTerm))
                 return;
 
-            if (AddMovies == null)
-                AddMovies = new ObservableCollection<RadarrSharp.Models.Movie>();
+            if (MovieDiscoveryMovies.Count > 0)
+                MovieDiscoveryMovies.Clear();
 
-            if (AddMovies.Count > 0)
-                AddMovies.Clear();
-
-            var movies = await RadarrClient.Movie.SearchForMovie(AddMovieSearchTerm);
+            var movies = await RadarrClient.Movie.SearchForMovie(MovieDiscoverySearchTerm);
 
             if (movies != null)
                 foreach (var item in movies)
-                    AddMovies.Add(item);
+                    MovieDiscoveryMovies.Add(item);
+        }
+
+        /// <summary>
+        /// Executes the movie discovery add movie command.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        private async void Execute_MovieDiscoveryAddMovieCommand(object obj)
+        {
+            if (obj == null)
+                return;
+
+            // Get movie object
+            var discoveryMovie = (RadarrSharp.Models.Movie)obj;
+
+            var newMovie = new RadarrSharp.Models.Movie();
+
+            try
+            {
+                newMovie = await RadarrClient.Movie.AddMovie(
+                    discoveryMovie.Title,
+                    int.Parse(discoveryMovie.Year.ToString()),
+                    int.Parse(SelectedProfile.Id.ToString()),
+                    discoveryMovie.TitleSlug,
+                    new List<RadarrSharp.Models.Image>(discoveryMovie.Images),
+                    int.Parse(discoveryMovie.TmdbId.ToString()),
+                    SelectedRootFolder.Path,
+                    SelectedMinimumAvailability,
+                    MovieDiscoveryIsMonitored,
+                    new RadarrSharp.Endpoints.Movie.AddOptions { SearchForMovie = MovieDiscoverySearchForMovie });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ERROR] [Execute_AddMovieFromDiscovery] Operation has failed. {ex.Message}");
+            }
+
+            if (newMovie != null)
+            {
+                Movies.Add(newMovie);
+
+                // Refresh views
+                MoviesView.Refresh();
+                MovieDiscoveryMoviesView.Refresh();
+            }
         }
 
         /// <summary>
@@ -774,12 +955,15 @@ namespace Organizerr.ViewModels
             if (SelectedMovie == null)
                 return;
 
-            // does not work as images are never null
-            if (!SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster))
-                SelectedMoviePosterUrl = $"{RadarrUrl}/Content/Images/poster-dark.png";
+            // reset before selecting new images
+            SelectedMoviePosterUrl = null;
+            SelectedMovieFanartUrl = null;
 
-            SelectedMoviePosterUrl = $"{RadarrUrl}{SelectedMovie.Images.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster).Url}";
-            SelectedMovieFanartUrl = $"{RadarrUrl}{SelectedMovie.Images.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt).Url}";
+            if (SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster))
+                SelectedMoviePosterUrl = $"{RadarrUrl}{SelectedMovie.Images.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster).Url}";
+
+            if (SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt))
+                SelectedMovieFanartUrl = $"{RadarrUrl}{SelectedMovie.Images.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt).Url}";
         }
 
         private bool Movies_OnFilter(object obj)

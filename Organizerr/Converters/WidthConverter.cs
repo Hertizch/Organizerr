@@ -24,8 +24,8 @@ namespace Organizerr.Converters
         {
             if (value == null) return 0;
 
-            // 45%
-            return (double)value * 0.45;
+            // 50%
+            return (double)value * 0.5;
         }
 
         /// <summary>

@@ -103,6 +103,35 @@
         </Setter>
     </Style>
 
+    <Style x:Key="NoTextEnabledCheckBox" TargetType="{x:Type CheckBox}">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="#33FFFFFF" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <Grid Background="{TemplateBinding Background}" HorizontalAlignment="{TemplateBinding HorizontalAlignment}">
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <Viewbox Width="16" Height="16">
+                                <Canvas Width="24" Height="24">
+                                    <Path x:Name="Icon" Data="{DynamicResource CheckmarkFalseIcon}" Fill="{TemplateBinding Foreground}" />
+                                </Canvas>
+                            </Viewbox>
+                        </StackPanel>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Icon" Property="Data" Value="{DynamicResource CheckmarkTrueIcon}" />
+                            <Setter Property="Foreground" Value="#FF5E8B21" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="DefaultRadioButton" TargetType="{x:Type RadioButton}">
         <Setter Property="OverridesDefaultStyle" Value="True" />
         <Setter Property="UseLayoutRounding" Value="True" />
