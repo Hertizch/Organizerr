@@ -37,7 +37,7 @@ namespace Organizerr.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool EnableSonarr {
             get {
                 return ((bool)(this["EnableSonarr"]));
@@ -97,7 +97,7 @@ namespace Organizerr.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("192.168.1.250")]
         public string SonarrHost {
             get {
                 return ((string)(this["SonarrHost"]));
@@ -109,7 +109,7 @@ namespace Organizerr.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        [global::System.Configuration.DefaultSettingValueAttribute("8989")]
         public int SonarrPort {
             get {
                 return ((int)(this["SonarrPort"]));
@@ -133,7 +133,7 @@ namespace Organizerr.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("sonarr")]
         public string SonarrUrlBase {
             get {
                 return ((string)(this["SonarrUrlBase"]));
@@ -188,6 +188,42 @@ namespace Organizerr.Properties {
             }
             set {
                 this["RadarrHideUnmonitored"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UseRelativeDates {
+            get {
+                return ((bool)(this["UseRelativeDates"]));
+            }
+            set {
+                this["UseRelativeDates"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowFanart {
+            get {
+                return ((bool)(this["ShowFanart"]));
+            }
+            set {
+                this["ShowFanart"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowPoster {
+            get {
+                return ((bool)(this["ShowPoster"]));
+            }
+            set {
+                this["ShowPoster"] = value;
             }
         }
     }

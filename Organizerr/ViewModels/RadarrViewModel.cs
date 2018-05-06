@@ -64,6 +64,7 @@ namespace Organizerr.ViewModels
         private RelayCommand _clearSearchTermCommand;
         private RelayCommand _movieDiscoverySearchCommand;
         private RelayCommand _movieDiscoveryAddMovieCommand;
+        private RelayCommand _getRadarrHealthCommand;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RadarrViewModel"/> class.
@@ -100,16 +101,17 @@ namespace Organizerr.ViewModels
             // Get system info
             GetRadarrSystemInfo.Execute(null);
 
-            // Set view
+            // Set views
             MoviesView = CollectionViewSource.GetDefaultView(Movies);
             MoviesView.SortDescriptions.Add(new SortDescription(nameof(RadarrSharp.Models.Movie.SortTitle), ListSortDirection.Ascending));
             MoviesView.Filter = new Predicate<object>(Movies_OnFilter);
 
             MovieDiscoveryMoviesView = CollectionViewSource.GetDefaultView(MovieDiscoveryMovies);
 
-            //IsAddMovieOverlayVisible = true;
-            //AddMovieSearchTerm = "matrix";
-            //MovieDiscoverySearchCommand.Execute(null);
+            // design mode props
+            /*IsAddMovieOverlayVisible = true;
+            MovieDiscoverySearchTerm = "fifty";
+            MovieDiscoverySearchCommand.Execute(null);*/
         }
 
         /// <summary>
@@ -201,7 +203,7 @@ namespace Organizerr.ViewModels
         public string MovieDiscoverySearchTerm
         {
             get => _movieDiscoverySearchTerm;
-            set { if (value == _movieDiscoverySearchTerm) return; _movieDiscoverySearchTerm = value; OnPropertyChanged(); }
+            set { if (value == _movieDiscoverySearchTerm) return; _movieDiscoverySearchTerm = value; OnPropertyChanged(); if (MovieDiscoverySearchCommand.CanExecute(!string.IsNullOrWhiteSpace(MovieDiscoverySearchTerm))) MovieDiscoverySearchCommand.Execute(null); }
         }
 
         /// <summary>
@@ -484,6 +486,9 @@ namespace Organizerr.ViewModels
 
         public RelayCommand MovieDiscoveryAddMovieCommand =>
             _movieDiscoveryAddMovieCommand ?? (_movieDiscoveryAddMovieCommand = new RelayCommand(Execute_MovieDiscoveryAddMovieCommand, p => true));
+
+        public RelayCommand GetRadarrHealthCommand =>
+            _getRadarrHealthCommand ?? (_getRadarrHealthCommand = new RelayCommand(Execute_GetRadarrHealthCommand, p => true));
 
 
         /// <summary>
@@ -800,8 +805,6 @@ namespace Organizerr.ViewModels
                 // Add to extra files collection
                 foreach (var item in extraFiles)
                     ExtraFiles.Add(item);
-
-                Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got {extraFiles.Count} extra files");
             }
             else
                 Debug.WriteLine($"[INFO] [{movie.Title} (ID: {movie.Id})] Got no response from Radarr, operation has failed");
@@ -883,16 +886,34 @@ namespace Organizerr.ViewModels
         private async void Execute_MovieDiscoverySearchCommand(object obj)
         {
             if (string.IsNullOrWhiteSpace(MovieDiscoverySearchTerm))
-                return;
+            {
+                if (MovieDiscoveryMovies.Count > 0)
+                    MovieDiscoveryMovies.Clear();
 
+                return;
+            }
+                
             if (MovieDiscoveryMovies.Count > 0)
                 MovieDiscoveryMovies.Clear();
 
-            var movies = await RadarrClient.Movie.SearchForMovie(MovieDiscoverySearchTerm);
+            IList<RadarrSharp.Models.Movie> movies = new List<RadarrSharp.Models.Movie>();
 
-            if (movies != null)
+            Debug.WriteLine($"[INFO] [Execute_MovieDiscoverySearchCommand] Started search with term: '{MovieDiscoverySearchTerm}'");
+
+            try
+            {
+                movies = await RadarrClient.Movie.SearchForMovie(MovieDiscoverySearchTerm);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[INFO] [Execute_MovieDiscoverySearchCommand] Operation has failed - {ex.Message}");
+            }
+
+            if (movies.Count > 0)
                 foreach (var item in movies)
                     MovieDiscoveryMovies.Add(item);
+            else
+                Debug.WriteLine($"[INFO] [Execute_MovieDiscoverySearchCommand] Got no results from Radarr on search term: '{MovieDiscoverySearchTerm}'");
         }
 
         /// <summary>
@@ -948,6 +969,17 @@ namespace Organizerr.ViewModels
         }
 
         /// <summary>
+        /// Executes the get radarr health command.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        private async void Execute_GetRadarrHealthCommand(object obj)
+        {
+            Debug.WriteLine($"Event fired");
+
+            
+        }
+
+        /// <summary>
         /// Sets the selected move image urls.
         /// </summary>
         private void SetSelectedMoveImageUrls()
@@ -959,10 +991,10 @@ namespace Organizerr.ViewModels
             SelectedMoviePosterUrl = null;
             SelectedMovieFanartUrl = null;
 
-            if (SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster))
+            if (Settings.Default.ShowPoster && SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster))
                 SelectedMoviePosterUrl = $"{RadarrUrl}{SelectedMovie.Images.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.Poster).Url}";
 
-            if (SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt))
+            if (Settings.Default.ShowFanart && SelectedMovie.Images.Any(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt))
                 SelectedMovieFanartUrl = $"{RadarrUrl}{SelectedMovie.Images.FirstOrDefault(x => x.CoverType == RadarrSharp.Enums.CoverType.FanArt).Url}";
         }
 

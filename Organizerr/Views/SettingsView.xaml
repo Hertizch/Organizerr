@@ -13,7 +13,7 @@
                 
                 <!-- Radarr -->
                 <DockPanel>
-                    <TextBlock Text="Radarr" Foreground="White" FontSize="22" FontFamily="Segoe UI Semilight" />
+                    <TextBlock Text="Radarr" Foreground="#FFAE6AA7" FontSize="22" FontFamily="Segoe UI Semilight" />
                     <CheckBox HorizontalAlignment="Right" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=EnableRadarr, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Enable Radarr" Style="{StaticResource DefaultCheckBox}" />
                 </DockPanel>
                 <Grid Margin="0,15,0,0">
@@ -42,7 +42,7 @@
                 
                 <!-- Sonarr -->
                 <DockPanel Margin="0,30,0,0">
-                    <TextBlock Text="Sonarr" Foreground="White" FontSize="22" FontFamily="Segoe UI Semilight" />
+                    <TextBlock Text="Sonarr" Foreground="#FFAE6AA7" FontSize="22" FontFamily="Segoe UI Semilight" />
                     <CheckBox HorizontalAlignment="Right" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=EnableSonarr, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Enable Sonarr" Style="{StaticResource DefaultCheckBox}" />
                 </DockPanel>
                 <Grid Margin="0,15,0,0">
@@ -67,6 +67,18 @@
 
                     <TextBlock Grid.Column="3" Text="API Key" Foreground="#B2FFFFFF" Margin="3" />
                     <TextBox Grid.Column="3" Grid.Row="1" Style="{StaticResource DefaultTextBox}" Text="{Binding Source={x:Static properties:Settings.Default}, Path=SonarrApiKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Source={x:Static properties:Settings.Default}, Path=EnableSonarr}" />
+                </Grid>
+                
+                <!-- UI -->
+                <DockPanel Margin="0,30,0,0">
+                    <TextBlock Text="User Interface" Foreground="#FFAE6AA7" FontSize="22" FontFamily="Segoe UI Semilight" />
+                </DockPanel>
+                <Grid Margin="0,15,0,0">
+                    <StackPanel>
+                        <CheckBox Style="{StaticResource DefaultCheckBox}" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=UseRelativeDates, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Content="Use relative dates (eg. 1 day ago instead of full date)" />
+                        <CheckBox Style="{StaticResource DefaultCheckBox}" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=ShowFanart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Content="Show background art on item details" />
+                        <CheckBox Style="{StaticResource DefaultCheckBox}" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=ShowPoster, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" Content="Show poster on item details" />
+                    </StackPanel>
                 </Grid>
                 
             </StackPanel>

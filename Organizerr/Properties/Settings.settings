@@ -6,7 +6,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="EnableSonarr" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="RadarrHost" Type="System.String" Scope="User">
       <Value Profile="(Default)">192.168.1.250</Value>
@@ -21,16 +21,16 @@
       <Value Profile="(Default)">radarr</Value>
     </Setting>
     <Setting Name="SonarrHost" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">192.168.1.250</Value>
     </Setting>
     <Setting Name="SonarrPort" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">8989</Value>
     </Setting>
     <Setting Name="SonarrUseSsl" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="SonarrUrlBase" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">sonarr</Value>
     </Setting>
     <Setting Name="RadarrApiKey" Type="System.String" Scope="User">
       <Value Profile="(Default)">43bdebe9f37b4d20bd5c37834ddb8ac2</Value>
@@ -43,6 +43,15 @@
     </Setting>
     <Setting Name="RadarrHideUnmonitored" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="UseRelativeDates" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowFanart" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShowPoster" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

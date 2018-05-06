@@ -89,6 +89,7 @@
     </ApplicationDefinition>
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\BytesToSizeWithSuffixConverter.cs" />
+    <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\ExistsInCollectionToBooleanConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
     <Compile Include="Converters\HasValueToVisibilityConverter.cs" />
