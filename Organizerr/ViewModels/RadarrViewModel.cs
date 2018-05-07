@@ -46,6 +46,10 @@ namespace Organizerr.ViewModels
         private int _missingMovieCount;
         private RadarrSharp.Models.SystemStatus _systemStatus;
         private ICollectionView _moviesView;
+        private bool _hideDownloaded;
+        private bool _hideUnmonitored;
+        private bool _filterOnStatus;
+        private RadarrSharp.Enums.Status _filterOnStatusValue;
 
         // commands
         private RelayCommand _getRootFoldersCommand;
@@ -432,6 +436,54 @@ namespace Organizerr.ViewModels
         {
             get => _movieDiscoveryMoviesView;
             set { if (value == _movieDiscoveryMoviesView) return; _movieDiscoveryMoviesView = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide downloaded].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide downloaded]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideDownloaded
+        {
+            get => _hideDownloaded;
+            set { if (value == _hideDownloaded) return; _hideDownloaded = value; OnPropertyChanged(); MoviesView.Refresh(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide unmonitored].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide unmonitored]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideUnmonitored
+        {
+            get => _hideUnmonitored;
+            set { if (value == _hideUnmonitored) return; _hideUnmonitored = value; OnPropertyChanged(); MoviesView.Refresh(); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [filter on status].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [filter on status]; otherwise, <c>false</c>.
+        /// </value>
+        public bool FilterOnStatus
+        {
+            get => _filterOnStatus;
+            set { if (value == _filterOnStatus) return; _filterOnStatus = value; OnPropertyChanged(); MoviesView.Refresh(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the filter on status value.
+        /// </summary>
+        /// <value>
+        /// The filter on status value.
+        /// </value>
+        public RadarrSharp.Enums.Status FilterOnStatusValue
+        {
+            get => _filterOnStatusValue;
+            set { if (value == _filterOnStatusValue) return; _filterOnStatusValue = value; OnPropertyChanged(); if (FilterOnStatus) MoviesView.Refresh(); }
         }
 
 
@@ -1000,25 +1052,42 @@ namespace Organizerr.ViewModels
 
         private bool Movies_OnFilter(object obj)
         {
+            if (Movies.Count == 0) return false;
+
             var movie = (RadarrSharp.Models.Movie)obj;
 
-            // if no text in search term
-            if (string.IsNullOrWhiteSpace(SearchTerm))
-                return true;
+            // hide downloaded
+            if (HideDownloaded && movie.Downloaded)
+                return false;
 
-            // radarr id
-            if (SearchTerm.StartsWith("id:"))
-                return movie != null && movie.Id.ToString() == SearchTerm.Substring("id:".Length);
+            // hide unmonitored
+            if (HideUnmonitored && !movie.Monitored)
+                return false;
 
-            // imdb
-            if (SearchTerm.StartsWith("imdb:"))
-                return movie != null && movie.ImdbId.ToString() == SearchTerm.Substring("imdb:".Length);
+            // filter on status
+            if (FilterOnStatus)
+                if (FilterOnStatusValue != movie.Status)
+                    return false;
 
-            // the movie database
-            if (SearchTerm.StartsWith("tmdb:"))
-                return movie != null && movie.TmdbId.ToString() == SearchTerm.Substring("tmdb:".Length);
+            if (!string.IsNullOrWhiteSpace(SearchTerm))
+            {
+                // radarr id
+                if (SearchTerm.StartsWith("id:"))
+                    return movie.Id.ToString() == SearchTerm.Substring("id:".Length);
 
-            return movie != null && movie.Title.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase);
+                // imdb
+                if (SearchTerm.StartsWith("imdb:"))
+                    return movie.ImdbId.ToString() == SearchTerm.Substring("imdb:".Length);
+
+                // the movie database
+                if (SearchTerm.StartsWith("tmdb:"))
+                    return movie.TmdbId.ToString() == SearchTerm.Substring("tmdb:".Length);
+
+                // search term
+                return movie.Title.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return true;
         }
     }
 }

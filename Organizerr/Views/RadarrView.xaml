@@ -18,6 +18,12 @@
                 <x:Type TypeName="radarrEnum:MinimumAvailability" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="StatusEnumData" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="radarrEnum:Status" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Margin="30,30,30,0">
@@ -63,10 +69,13 @@
 
         <!-- Filter buttons -->
         <Grid Grid.Row="1" Margin="0,15">
-            <StackPanel Orientation="Horizontal">
-                <CheckBox Style="{StaticResource DefaultCheckBox}" Content="Hide downloaded" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=RadarrHideDownloaded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                <CheckBox Style="{StaticResource DefaultCheckBox}" Content="Hide unmonitored" IsChecked="{Binding Source={x:Static properties:Settings.Default}, Path=RadarrHideUnmonitored, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="15,0,0,0" />
-            </StackPanel>
+            <DockPanel>
+                <CheckBox Style="{StaticResource DefaultCheckBox}" Content="Hide downloaded" IsChecked="{Binding Path=HideDownloaded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                <CheckBox Style="{StaticResource DefaultCheckBox}" Content="Hide unmonitored" IsChecked="{Binding Path=HideUnmonitored, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="15,0,0,0" />
+                <CheckBox Style="{StaticResource DefaultCheckBox}" IsChecked="{Binding Path=FilterOnStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="Only show:" Margin="15,0,0,0" />
+                <ComboBox Style="{StaticResource DefaultComboBox}" MinWidth="120" ItemContainerStyle="{StaticResource DefaultComboBoxItem}" ItemsSource="{Binding Source={StaticResource StatusEnumData}}" SelectedItem="{Binding Path=FilterOnStatusValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="8,0,0,0" />
+                <TextBlock Text="{Binding Path=MoviesView.Count, StringFormat={}Showing {0} movies}" Foreground="#66FFFFFF" HorizontalAlignment="Right" VerticalAlignment="Center" />
+            </DockPanel>
         </Grid>
 
         <!-- Movies Grid -->
@@ -382,6 +391,7 @@
                     <Style.Triggers>
                         
                         <!-- hide downloaded -->
+                        <!--
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding Source={x:Static properties:Settings.Default}, Path=RadarrHideDownloaded}" Value="True" />
@@ -390,8 +400,10 @@
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Setter Property="IsEnabled" Value="False" />
                         </MultiDataTrigger>
+                        -->
 
                         <!-- hide unmonitored -->
+                        <!--
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding Source={x:Static properties:Settings.Default}, Path=RadarrHideUnmonitored}" Value="True" />
@@ -400,6 +412,7 @@
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Setter Property="IsEnabled" Value="False" />
                         </MultiDataTrigger>
+                        -->
                     </Style.Triggers>
                 </Style>
             </DataGrid.RowStyle>
