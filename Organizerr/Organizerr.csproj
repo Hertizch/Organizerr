@@ -91,6 +91,7 @@
     <Compile Include="Converters\BytesToSizeWithSuffixConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\ExistsInCollectionToBooleanConverter.cs" />
+    <Compile Include="Converters\InvertedBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\WidthConverter.cs" />
     <Compile Include="Converters\HasValueToVisibilityConverter.cs" />
     <Compile Include="Converters\InvertedBooleanConverter.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="DialogWindow.xaml.cs">
       <DependentUpon>DialogWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Enums\FilterValue.cs" />
     <Compile Include="Extensions\ObservableObject.cs" />
     <Compile Include="Extensions\RelayCommand.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />

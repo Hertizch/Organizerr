@@ -26,6 +26,7 @@
             <conv:InvertedBooleanConverter x:Key="InvertedBooleanConverter" />
             <conv:ToUpperStringConverter x:Key="ToUpperStringConverter" />
             <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+            <conv:InvertedBooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" />
             <conv:MonitorOperationStatusToStringConverter x:Key="MonitorOperationStatusToStringConverter" />
             <conv:HasValueToVisibilityConverter x:Key="HasValueToVisibilityConverter" />
             <conv:WidthConverter x:Key="WidthConverter" />

@@ -1,4 +1,5 @@
-﻿using Organizerr.Extensions;
+﻿using Organizerr.Enums;
+using Organizerr.Extensions;
 using Organizerr.Properties;
 using RadarrSharp;
 using System;
@@ -28,9 +29,10 @@ namespace Organizerr.ViewModels
         private string _movieDiscoverySearchTerm;
         private ObservableCollection<RadarrSharp.Models.Movie> _movieDiscoveryMovies;
         private ICollectionView _movieDiscoveryMoviesView;
+        private bool _isMovieDiscoveryOverlayVisible;
+        private bool _movieDiscoveryIsSearching;
 
         private string _searchTerm;
-        private bool _isAddMovieOverlayVisible;
         private bool _toggleMonitoredStatusIsBusy;
         private bool _isSettingMonitoredToFalseForCutoffMet;
         private int _unmonitorWhereCutoffMetCountProcessed;
@@ -46,10 +48,12 @@ namespace Organizerr.ViewModels
         private int _missingMovieCount;
         private RadarrSharp.Models.SystemStatus _systemStatus;
         private ICollectionView _moviesView;
-        private bool _hideDownloaded;
-        private bool _hideUnmonitored;
+
+        // filter
         private bool _filterOnStatus;
         private RadarrSharp.Enums.Status _filterOnStatusValue;
+        private FilterValue _monitoredFilterValue;
+        private FilterValue _downloadedFilterValue;
 
         // commands
         private RelayCommand _getRootFoldersCommand;
@@ -113,377 +117,192 @@ namespace Organizerr.ViewModels
             MovieDiscoveryMoviesView = CollectionViewSource.GetDefaultView(MovieDiscoveryMovies);
 
             // design mode props
-            /*IsAddMovieOverlayVisible = true;
-            MovieDiscoverySearchTerm = "fifty";
-            MovieDiscoverySearchCommand.Execute(null);*/
+            //IsMovieDiscoveryOverlayVisible = true;
+            //MovieDiscoveryIsSearching = true;
+            //MovieDiscoverySearchTerm = "fifty";
+            //MovieDiscoverySearchCommand.Execute(null);
         }
 
-        /// <summary>
-        /// Gets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
         public string Name => "RADARR";
 
-        /// <summary>
-        /// Gets or sets the selected root folder.
-        /// </summary>
-        /// <value>
-        /// The selected root folder.
-        /// </value>
         public RadarrSharp.Models.RootFolder SelectedRootFolder
         {
             get => _selectedRootFolder;
             set { if (value == _selectedRootFolder) return; _selectedRootFolder = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the selected minimum availability.
-        /// </summary>
-        /// <value>
-        /// The selected minimum availability.
-        /// </value>
         public RadarrSharp.Enums.MinimumAvailability SelectedMinimumAvailability
         {
             get => _selectedMinimumAvailability;
             set { if (value == _selectedMinimumAvailability) return; _selectedMinimumAvailability = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [movie discovery is monitored].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [movie discovery is monitored]; otherwise, <c>false</c>.
-        /// </value>
         public bool MovieDiscoveryIsMonitored
         {
             get => _movieDiscoveryIsMonitored;
             set { if (value == _movieDiscoveryIsMonitored) return; _movieDiscoveryIsMonitored = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [movie discovery search for movie].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [movie discovery search for movie]; otherwise, <c>false</c>.
-        /// </value>
         public bool MovieDiscoverySearchForMovie
         {
             get => _movieDiscoverySearchForMovie;
             set { if (value == _movieDiscoverySearchForMovie) return; _movieDiscoverySearchForMovie = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the search term.
-        /// </summary>
-        /// <value>
-        /// The search term.
-        /// </value>
         public string SearchTerm
         {
             get => _searchTerm;
             set { if (value == _searchTerm) return; _searchTerm = value; OnPropertyChanged(); MoviesView.Refresh(); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is add movie overlay visible.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is add movie overlay visible; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsAddMovieOverlayVisible
+        public bool IsMovieDiscoveryOverlayVisible
         {
-            get => _isAddMovieOverlayVisible;
-            set { if (value == _isAddMovieOverlayVisible) return; _isAddMovieOverlayVisible = value; OnPropertyChanged(); }
+            get => _isMovieDiscoveryOverlayVisible;
+            set { if (value == _isMovieDiscoveryOverlayVisible) return; _isMovieDiscoveryOverlayVisible = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the movie discovery search term.
-        /// </summary>
-        /// <value>
-        /// The movie discovery search term.
-        /// </value>
+        public bool MovieDiscoveryIsSearching
+        {
+            get => _movieDiscoveryIsSearching;
+            set { if (value == _movieDiscoveryIsSearching) return; _movieDiscoveryIsSearching = value; OnPropertyChanged(); }
+        }
+
         public string MovieDiscoverySearchTerm
         {
             get => _movieDiscoverySearchTerm;
             set { if (value == _movieDiscoverySearchTerm) return; _movieDiscoverySearchTerm = value; OnPropertyChanged(); if (MovieDiscoverySearchCommand.CanExecute(!string.IsNullOrWhiteSpace(MovieDiscoverySearchTerm))) MovieDiscoverySearchCommand.Execute(null); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [toggle monitored status is busy].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [toggle monitored status is busy]; otherwise, <c>false</c>.
-        /// </value>
         public bool ToggleMonitoredStatusIsBusy
         {
             get => _toggleMonitoredStatusIsBusy;
             set { if (value == _toggleMonitoredStatusIsBusy) return; _toggleMonitoredStatusIsBusy = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is setting monitored to false for cutoff met.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is setting monitored to false for cutoff met; otherwise, <c>false</c>.
-        /// </value>
         public bool IsSettingMonitoredToFalseForCutoffMet
         {
             get => _isSettingMonitoredToFalseForCutoffMet;
             set { if (value == _isSettingMonitoredToFalseForCutoffMet) return; _isSettingMonitoredToFalseForCutoffMet = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the unmonitor where cutoff met count processed.
-        /// </summary>
-        /// <value>
-        /// The unmonitor where cutoff met count processed.
-        /// </value>
         public int UnmonitorWhereCutoffMetCountProcessed
         {
             get => _unmonitorWhereCutoffMetCountProcessed;
             set { if (value == _unmonitorWhereCutoffMetCountProcessed) return; _unmonitorWhereCutoffMetCountProcessed = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the unmonitor where cutoff met count total.
-        /// </summary>
-        /// <value>
-        /// The unmonitor where cutoff met count total.
-        /// </value>
         public int UnmonitorWhereCutoffMetCountTotal
         {
             get => _unmonitorWhereCutoffMetCountTotal;
             set { if (value == _unmonitorWhereCutoffMetCountTotal) return; _unmonitorWhereCutoffMetCountTotal = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the radarr client.
-        /// </summary>
-        /// <value>
-        /// The radarr client.
-        /// </value>
         public RadarrClient RadarrClient { get; set; }
 
-        /// <summary>
-        /// Gets or sets the radarr URL.
-        /// </summary>
-        /// <value>
-        /// The radarr URL.
-        /// </value>
         public string RadarrUrl { get; set; }
 
-        /// <summary>
-        /// Gets or sets the movies.
-        /// </summary>
-        /// <value>
-        /// The movies.
-        /// </value>
         public ObservableCollection<RadarrSharp.Models.Movie> Movies
         {
             get => _movies;
             set { if (value == _movies) return; _movies = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the extra files.
-        /// </summary>
-        /// <value>
-        /// The extra files.
-        /// </value>
         public ObservableCollection<RadarrSharp.Models.ExtraFile> ExtraFiles
         {
             get => _extraFiles;
             set { if (value == _extraFiles) return; _extraFiles = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the add movies.
-        /// </summary>
-        /// <value>
-        /// The add movies.
-        /// </value>
         public ObservableCollection<RadarrSharp.Models.Movie> MovieDiscoveryMovies
         {
             get => _movieDiscoveryMovies;
             set { if (value == _movieDiscoveryMovies) return; _movieDiscoveryMovies = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the root folders.
-        /// </summary>
-        /// <value>
-        /// The root folders.
-        /// </value>
         public ObservableCollection<RadarrSharp.Models.RootFolder> RootFolders
         {
             get => _rootFolders;
             set { if (value == _rootFolders) return; _rootFolders = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the selected movie.
-        /// </summary>
-        /// <value>
-        /// The selected movie.
-        /// </value>
         public RadarrSharp.Models.Movie SelectedMovie
         {
             get => _selectedMovie;
             set { if (value == _selectedMovie) return; _selectedMovie = value; OnPropertyChanged(); SetSelectedMoveImageUrls(); }
         }
 
-        /// <summary>
-        /// Gets or sets the selected profile.
-        /// </summary>
-        /// <value>
-        /// The selected profile.
-        /// </value>
         public RadarrSharp.Models.Profile SelectedProfile
         {
             get => _selectedProfile;
             set { if (value == _selectedProfile) return; _selectedProfile = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the selected movie poster URL.
-        /// </summary>
-        /// <value>
-        /// The selected movie poster URL.
-        /// </value>
         public string SelectedMoviePosterUrl
         {
             get => _selectedMoviePosterUrl;
             set { if (value == _selectedMoviePosterUrl) return; _selectedMoviePosterUrl = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the selected movie fanart URL.
-        /// </summary>
-        /// <value>
-        /// The selected movie fanart URL.
-        /// </value>
         public string SelectedMovieFanartUrl
         {
             get => _selectedMovieFanartUrl;
             set { if (value == _selectedMovieFanartUrl) return; _selectedMovieFanartUrl = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the total disk usage.
-        /// </summary>
-        /// <value>
-        /// The total disk usage.
-        /// </value>
         public long TotalDiskUsage
         {
             get => _totalDiskUsage;
             set { if (value == _totalDiskUsage) return; _totalDiskUsage = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the missing movie count.
-        /// </summary>
-        /// <value>
-        /// The missing movie count.
-        /// </value>
         public int MissingMovieCount
         {
             get => _missingMovieCount;
             set { if (value == _missingMovieCount) return; _missingMovieCount = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the system status.
-        /// </summary>
-        /// <value>
-        /// The system status.
-        /// </value>
         public RadarrSharp.Models.SystemStatus SystemStatus
         {
             get => _systemStatus;
             set { if (value == _systemStatus) return; _systemStatus = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the profiles.
-        /// </summary>
-        /// <value>
-        /// The profiles.
-        /// </value>
         public List<RadarrSharp.Models.Profile> Profiles { get; set; }
 
-        /// <summary>
-        /// Gets or sets the movies view.
-        /// </summary>
-        /// <value>
-        /// The movies view.
-        /// </value>
         public ICollectionView MoviesView
         {
             get => _moviesView;
             set { if (value == _moviesView) return; _moviesView = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets the movie discovery movies view.
-        /// </summary>
-        /// <value>
-        /// The movie discovery movies view.
-        /// </value>
         public ICollectionView MovieDiscoveryMoviesView
         {
             get => _movieDiscoveryMoviesView;
             set { if (value == _movieDiscoveryMoviesView) return; _movieDiscoveryMoviesView = value; OnPropertyChanged(); }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [hide downloaded].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [hide downloaded]; otherwise, <c>false</c>.
-        /// </value>
-        public bool HideDownloaded
-        {
-            get => _hideDownloaded;
-            set { if (value == _hideDownloaded) return; _hideDownloaded = value; OnPropertyChanged(); MoviesView.Refresh(); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [hide unmonitored].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [hide unmonitored]; otherwise, <c>false</c>.
-        /// </value>
-        public bool HideUnmonitored
-        {
-            get => _hideUnmonitored;
-            set { if (value == _hideUnmonitored) return; _hideUnmonitored = value; OnPropertyChanged(); MoviesView.Refresh(); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [filter on status].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [filter on status]; otherwise, <c>false</c>.
-        /// </value>
         public bool FilterOnStatus
         {
             get => _filterOnStatus;
             set { if (value == _filterOnStatus) return; _filterOnStatus = value; OnPropertyChanged(); MoviesView.Refresh(); }
         }
 
-        /// <summary>
-        /// Gets or sets the filter on status value.
-        /// </summary>
-        /// <value>
-        /// The filter on status value.
-        /// </value>
         public RadarrSharp.Enums.Status FilterOnStatusValue
         {
             get => _filterOnStatusValue;
             set { if (value == _filterOnStatusValue) return; _filterOnStatusValue = value; OnPropertyChanged(); if (FilterOnStatus) MoviesView.Refresh(); }
+        }
+
+        public FilterValue MonitoredFilterValue
+        {
+            get => _monitoredFilterValue;
+            set { if (value == _monitoredFilterValue) return; _monitoredFilterValue = value; OnPropertyChanged(); MoviesView.Refresh(); }
+        }
+
+        public FilterValue DownloadedFilterValue
+        {
+            get => _downloadedFilterValue;
+            set { if (value == _downloadedFilterValue) return; _downloadedFilterValue = value; OnPropertyChanged(); MoviesView.Refresh(); }
         }
 
 
@@ -561,15 +380,16 @@ namespace Organizerr.ViewModels
             }
 
             // Add all items to collection
-            if (rootFolders != null)
+            if (rootFolders.Count > 0)
                 foreach (var item in rootFolders)
                     RootFolders.Add(item);
 
             // Set first item as selected
             if (RootFolders.Count > 0)
+            {
                 SelectedRootFolder = rootFolders.FirstOrDefault();
-
-            Debug.WriteLine($"[INFO] [Execute_GetRootFolderPathCommand] RootFolderPath set to '{SelectedRootFolder.Path}'");
+                Debug.WriteLine($"[INFO] [Execute_GetRootFolderPathCommand] RootFolderPath set to '{SelectedRootFolder.Path}'");
+            }
         }
 
         /// <summary>
@@ -589,7 +409,7 @@ namespace Organizerr.ViewModels
                 Debug.WriteLine($"[ERROR] [Execute_GetMoviesCommand] Operation has failed - {ex.Message}");
             }
 
-            if (movies != null)
+            if (movies.Count > 0)
                 foreach (var item in movies)
                 {
                     Movies.Add(item);
@@ -625,13 +445,16 @@ namespace Organizerr.ViewModels
             }
 
             // Add all items to collection
-            if (profiles != null)
+            if (profiles.Count > 0)
                 foreach (var item in profiles)
                     Profiles.Add(item);
 
             // Set first item as selected
             if (Profiles.Count > 0)
+            {
                 SelectedProfile = Profiles.FirstOrDefault();
+                Debug.WriteLine($"[INFO] [Execute_GetProfilesCommand] SelectedProfile set to '{SelectedProfile.Name}'");
+            }
         }
 
         /// <summary>
@@ -952,6 +775,8 @@ namespace Organizerr.ViewModels
 
             Debug.WriteLine($"[INFO] [Execute_MovieDiscoverySearchCommand] Started search with term: '{MovieDiscoverySearchTerm}'");
 
+            MovieDiscoveryIsSearching = true;
+
             try
             {
                 movies = await RadarrClient.Movie.SearchForMovie(MovieDiscoverySearchTerm);
@@ -966,6 +791,8 @@ namespace Organizerr.ViewModels
                     MovieDiscoveryMovies.Add(item);
             else
                 Debug.WriteLine($"[INFO] [Execute_MovieDiscoverySearchCommand] Got no results from Radarr on search term: '{MovieDiscoverySearchTerm}'");
+
+            MovieDiscoveryIsSearching = false;
         }
 
         /// <summary>
@@ -1057,11 +884,11 @@ namespace Organizerr.ViewModels
             var movie = (RadarrSharp.Models.Movie)obj;
 
             // hide downloaded
-            if (HideDownloaded && movie.Downloaded)
+            if (DownloadedFilterValue == FilterValue.Hide && movie.Downloaded)
                 return false;
 
             // hide unmonitored
-            if (HideUnmonitored && !movie.Monitored)
+            if (MonitoredFilterValue == FilterValue.Hide && movie.Monitored)
                 return false;
 
             // filter on status
